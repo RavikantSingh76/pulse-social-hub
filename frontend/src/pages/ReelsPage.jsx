@@ -26,13 +26,15 @@ export default function ReelsPage() {
   const { user } = useAuth();
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [soundFeedback, setSoundFeedback] = useState(null); // { isMuted: bool, id: number }
   const [activeCommentsPost, setActiveCommentsPost] = useState(null);
   const [activeSharePost, setActiveSharePost] = useState(null);
   const [followingMap, setFollowingMap] = useState({});
   const [heartPopMap, setHeartPopMap] = useState({});
   const [page, setPage] = useState(1);
   const audioRef = useRef(null);
+  const videoRefs = useRef({});
 
   useEffect(() => {
     fetchReels();
@@ -54,10 +56,15 @@ export default function ReelsPage() {
     }
   };
 
-  const toggleSound = (reelIdx = 0) => {
+  const toggleSound = (reelIdx = 0, reelId = null) => {
     const nextMuted = !muted;
     setMuted(nextMuted);
 
+    // Show center speaker flash feedback
+    setSoundFeedback({ isMuted: nextMuted, reelId });
+    setTimeout(() => setSoundFeedback(null), 900);
+
+    // Audio stream handling
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.loop = true;
@@ -66,8 +73,9 @@ export default function ReelsPage() {
     if (!nextMuted) {
       const track = REELS_AUDIO_TRACKS[reelIdx % REELS_AUDIO_TRACKS.length];
       audioRef.current.src = track.audioUrl;
+      audioRef.current.volume = 0.85;
       audioRef.current.play().catch(() => {});
-      toast.success(`Playing: ${track.title} 🎵`);
+      toast.success(`Playing: ${track.title} 🎵`, { id: 'reel-audio-toast' });
     } else {
       audioRef.current.pause();
     }
@@ -147,7 +155,7 @@ export default function ReelsPage() {
     return (
       <div className="flex flex-col justify-center items-center h-[calc(100vh-5rem)] space-y-3">
         <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Reels with Sound...</p>
+        <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Crystal Clear Reels...</p>
       </div>
     );
   }
@@ -160,7 +168,7 @@ export default function ReelsPage() {
             <Play className="w-8 h-8 text-cyan-400" />
           </div>
           <p className="text-base font-bold text-slate-200">No Reels Available</p>
-          <p className="text-xs text-slate-500 mt-1">Be the first to share a video reel with audio on Pulse!</p>
+          <p className="text-xs text-slate-500 mt-1">Be the first to share a video reel on Pulse!</p>
         </div>
       ) : (
         reels.map((reel, index) => {
@@ -179,23 +187,44 @@ export default function ReelsPage() {
               {/* Video Player */}
               {videoUrl ? (
                 <video
+                  ref={(el) => (videoRefs.current[reel.id] = el)}
                   src={videoUrl.startsWith('http') ? videoUrl : `http://localhost:8080${videoUrl}`}
                   className="w-full h-full object-cover cursor-pointer"
                   autoPlay
                   loop
                   muted={muted}
                   playsInline
-                  onClick={() => toggleSound(index)}
+                  preload="auto"
+                  onClick={() => toggleSound(index, reel.id)}
                   onDoubleClick={() => handleReaction(reel.id, 'LOVE')}
                 />
               ) : (
                 <div
                   className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-slate-950 via-indigo-950 to-slate-900 text-white p-8 text-center cursor-pointer"
                   onDoubleClick={() => handleReaction(reel.id, 'LOVE')}
-                  onClick={() => toggleSound(index)}
+                  onClick={() => toggleSound(index, reel.id)}
                 >
                   <Sparkles className="w-10 h-10 text-cyan-400 mb-3 animate-pulse" />
                   <p className="font-extrabold text-lg leading-relaxed">{reel.caption}</p>
+                </div>
+              )}
+
+              {/* Instagram-style Center Floating Speaker Flash */}
+              {soundFeedback && soundFeedback.reelId === reel.id && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 animate-scale-up">
+                  <div className="p-4 rounded-3xl bg-black/75 backdrop-blur-md border border-white/20 text-white flex flex-col items-center space-y-1 shadow-2xl">
+                    {soundFeedback.isMuted ? (
+                      <>
+                        <VolumeX className="w-10 h-10 text-rose-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-rose-300">Audio Muted</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-10 h-10 text-cyan-400 animate-pulse" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">Sound ON 🔊</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -212,10 +241,10 @@ export default function ReelsPage() {
               {/* Top Controls Overlay */}
               <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
                 <button
-                  onClick={() => toggleSound(index)}
+                  onClick={() => toggleSound(index, reel.id)}
                   className={`p-2.5 rounded-full backdrop-blur-md transition-all border cursor-pointer shadow-lg ${
                     !muted
-                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-400/40 shadow-cyan-500/30'
+                      ? 'bg-cyan-500/30 text-cyan-400 border-cyan-400/50 shadow-cyan-500/40'
                       : 'bg-black/60 text-white border-white/10 hover:bg-black/80'
                   }`}
                   title={muted ? 'Click to play Sound' : 'Mute'}
@@ -346,7 +375,7 @@ export default function ReelsPage() {
 
                 {/* Audio Track Info with Click to Play */}
                 <button
-                  onClick={() => toggleSound(index)}
+                  onClick={() => toggleSound(index, reel.id)}
                   className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/40 hover:bg-black/60 px-3 py-1 rounded-full w-fit backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
                 >
                   <Music2 className={`w-3.5 h-3.5 text-cyan-400 ${!muted ? 'animate-pulse' : ''}`} />
