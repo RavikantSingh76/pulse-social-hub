@@ -94,7 +94,7 @@ export const RightSidebar = () => {
                 onClick={() => setSearchQuery('')}
                 className="flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                <Avatar src={u.avatarUrl} username={u.username} size="sm" />
+                <Avatar src={u.avatarUrl} username={u.username} size="sm" disableLink={true} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{u.displayName}</p>
                   <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">@{u.username}</p>
@@ -121,7 +121,7 @@ export const RightSidebar = () => {
               return (
                 <div key={u.id} className="flex items-center justify-between">
                   <Link to={`/profile/${u.username}`} className="flex items-center space-x-3 min-w-0 pr-2">
-                    <Avatar src={u.avatarUrl} username={u.username} size="sm" />
+                    <Avatar src={u.avatarUrl} username={u.username} size="sm" disableLink={true} />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{u.displayName}</p>
                       <p className="text-[11px] text-gray-500 dark:text-zinc-400 truncate">@{u.username}</p>

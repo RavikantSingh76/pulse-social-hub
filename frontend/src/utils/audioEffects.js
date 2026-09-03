@@ -3,17 +3,39 @@ class SoundEngine {
   constructor() {
     this.ctx = null;
     this.isMuted = false;
+    this.userInteracted = false;
     this.speechSynth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+
+    if (typeof window !== 'undefined') {
+      const unlockAudio = () => {
+        this.userInteracted = true;
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+        window.removeEventListener('keydown', unlockAudio);
+      };
+
+      window.addEventListener('click', unlockAudio, { once: true, passive: true });
+      window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+      window.addEventListener('keydown', unlockAudio, { once: true, passive: true });
+    }
   }
 
   getAudioContext() {
-    if (!this.ctx) {
+    if (!this.userInteracted && !this.ctx) {
+      return null; // Don't trigger browser autoplay warning before user interaction
+    }
+    if (!this.ctx && typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
-        this.ctx = new AudioCtx();
+        try {
+          this.ctx = new AudioCtx();
+        } catch (e) {}
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (this.ctx && this.ctx.state === 'suspended' && this.userInteracted) {
       this.ctx.resume().catch(() => {});
     }
     return this.ctx;

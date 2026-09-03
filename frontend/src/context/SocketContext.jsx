@@ -37,9 +37,9 @@ export const SocketProvider = ({ children }) => {
     }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    // In dev Vite proxy forwards /ws to backend ws://localhost:8080/ws
-    const wsUrl = `${protocol}//${host}/ws`;
+    const wsUrl = window.location.hostname === 'localhost'
+      ? 'ws://localhost:8080/ws'
+      : `${protocol}//${window.location.host}/ws`;
 
     let socket;
     let reconnectTimeout;
