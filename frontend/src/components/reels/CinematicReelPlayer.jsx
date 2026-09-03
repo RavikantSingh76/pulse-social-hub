@@ -19,10 +19,13 @@ import {
   ChevronLeft,
   Flame,
   Zap,
-  Activity
+  Activity,
+  Sliders,
+  Scissors
 } from 'lucide-react';
 import { soundFx } from '../../utils/audioEffects';
 import { useAuth } from '../../context/AuthContext';
+import MusicPickerModal, { CURATED_MUSIC_LIBRARY } from './MusicPickerModal';
 import toast from 'react-hot-toast';
 
 const CINEMATIC_SCENES = [
@@ -157,6 +160,15 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
   const [heartPop, setHeartPop] = useState(false);
   const [cameraShake, setCameraShake] = useState(false);
 
+  // User-Controlled Music State
+  const [selectedMusic, setSelectedMusic] = useState({
+    ...CURATED_MUSIC_LIBRARY[0],
+    volume: 75,
+    startTime: 0,
+    autoDucking: true
+  });
+  const [showMusicPicker, setShowMusicPicker] = useState(false);
+
   const videoRef = useRef(null);
   const bgMusicRef = useRef(null);
   const sceneTimerRef = useRef(null);
@@ -164,24 +176,49 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
 
   const currentScene = CINEMATIC_SCENES[currentSceneIdx];
 
-  // Initialize Background Music Stream
+  // Initialize and update Background Music Stream when selectedMusic changes
   useEffect(() => {
-    bgMusicRef.current = new Audio('https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3');
-    bgMusicRef.current.loop = true;
-    bgMusicRef.current.volume = voiceOverEnabled ? 0.3 : 0.65;
-
-    if (isPlaying && !isMuted) {
-      bgMusicRef.current.play().catch(() => {});
-    }
-
-    return () => {
+    if (!selectedMusic) {
       if (bgMusicRef.current) {
         bgMusicRef.current.pause();
         bgMusicRef.current = null;
       }
-      soundFx.stopNarrator();
+      return;
+    }
+
+    if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+    }
+
+    const audio = new Audio(selectedMusic.audioUrl);
+    audio.loop = true;
+    audio.currentTime = selectedMusic.startTime || 0;
+    const initialVol = (selectedMusic.volume || 75) / 100;
+    audio.volume = voiceOverEnabled && selectedMusic.autoDucking ? initialVol * 0.25 : initialVol;
+    bgMusicRef.current = audio;
+
+    if (isPlaying && !isMuted) {
+      audio.play().catch(() => {});
+    }
+
+    return () => {
+      if (audio) {
+        audio.pause();
+      }
     };
-  }, []);
+  }, [selectedMusic?.id, selectedMusic?.audioUrl, selectedMusic?.startTime]);
+
+  // Update volume dynamically
+  useEffect(() => {
+    if (bgMusicRef.current && selectedMusic) {
+      const baseVol = (selectedMusic.volume || 75) / 100;
+      bgMusicRef.current.volume = isMuted
+        ? 0
+        : voiceOverEnabled && selectedMusic.autoDucking
+        ? baseVol * 0.25
+        : baseVol;
+    }
+  }, [selectedMusic?.volume, selectedMusic?.autoDucking, voiceOverEnabled, isMuted]);
 
   // Handle Scene Transitions, Precise Sound Design & Voice-Over Narration
   useEffect(() => {
@@ -213,11 +250,14 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
 
     // Natural Voice-Over Narrator with Auto-Ducking
     if (voiceOverEnabled && !isMuted) {
-      if (bgMusicRef.current) bgMusicRef.current.volume = 0.2; // Auto-duck music down
+      if (bgMusicRef.current && selectedMusic) {
+        const ducked = ((selectedMusic.volume || 75) / 100) * 0.25;
+        bgMusicRef.current.volume = ducked; // Duck music down
+      }
       soundFx.speakNarrator(currentScene.narration, () => {
-        // Smoothly restore music level
-        if (bgMusicRef.current && !isMuted) {
-          bgMusicRef.current.volume = 0.6;
+        // Smoothly restore music level after speech finishes
+        if (bgMusicRef.current && !isMuted && selectedMusic) {
+          bgMusicRef.current.volume = (selectedMusic.volume || 75) / 100;
         }
       });
     }
@@ -248,7 +288,7 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
     return () => {
       clearInterval(sceneTimerRef.current);
     };
-  }, [currentSceneIdx, isPlaying, voiceOverEnabled]);
+  }, [currentSceneIdx, isPlaying, voiceOverEnabled, selectedMusic, isMuted]);
 
   const handleNextScene = () => {
     if (currentSceneIdx < CINEMATIC_SCENES.length - 1) {
@@ -303,7 +343,9 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
     setVoiceOverEnabled(nextVoice);
     if (!nextVoice) {
       soundFx.stopNarrator();
-      if (bgMusicRef.current && !isMuted) bgMusicRef.current.volume = 0.65;
+      if (bgMusicRef.current && !isMuted && selectedMusic) {
+        bgMusicRef.current.volume = (selectedMusic.volume || 75) / 100;
+      }
       toast('🎙️ Voice-Over Off (Music Only)', { id: 'voice-toggle' });
     } else {
       soundFx.speakNarrator(currentScene.narration);
@@ -400,6 +442,18 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
 
         {/* Audio & Playback Controls */}
         <div className="flex items-center space-x-2">
+          {/* Add / Change Music Button */}
+          <button
+            onClick={() => {
+              soundFx.playSwipeTick();
+              setShowMusicPicker(true);
+            }}
+            className="p-2 rounded-full bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-400/40 backdrop-blur-md transition-all cursor-pointer flex items-center gap-1"
+            title="Choose / Change Music Track"
+          >
+            <Music className="w-4 h-4 text-cyan-400" />
+          </button>
+
           {/* Voice-Over Toggle Button */}
           <button
             onClick={toggleVoiceOver}
@@ -463,7 +517,7 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
         <ChevronRight className="w-8 h-8 text-white" />
       </button>
 
-      {/* Viral Animated Word-By-Word Captions (Hormozi / Vox Style) */}
+      {/* Viral Animated Word-By-Word Captions */}
       <div className="absolute inset-x-5 bottom-28 z-20 pointer-events-none flex flex-col items-center text-center space-y-2">
         <div className="p-3.5 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/15 shadow-2xl max-w-[340px] animate-fade-in">
           <p className="text-sm font-extrabold tracking-wide leading-relaxed">
@@ -553,9 +607,16 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
           </span>
         </button>
 
-        {/* Animated Rotating Vinyl Disc with Equalizer Bars */}
-        <div className="pt-2 flex flex-col items-center">
-          <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 via-indigo-900 to-fuchsia-600 p-0.5 border border-white/30 shadow-lg flex items-center justify-center ${isPlaying && !isMuted ? 'animate-spin-slow' : ''}`}>
+        {/* Animated Rotating Vinyl Disc with Equalizer Bars (Click opens Music Picker!) */}
+        <div
+          onClick={() => {
+            soundFx.playSwipeTick();
+            setShowMusicPicker(true);
+          }}
+          className="pt-2 flex flex-col items-center cursor-pointer group"
+          title="Click to Choose / Trim Music"
+        >
+          <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 via-indigo-900 to-fuchsia-600 p-0.5 border border-white/30 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform ${isPlaying && !isMuted ? 'animate-spin-slow' : ''}`}>
             <div className="w-3 h-3 rounded-full bg-slate-950 border border-white/40" />
           </div>
 
@@ -569,7 +630,7 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
         </div>
       </div>
 
-      {/* Bottom Creator Card & Call-To-Action */}
+      {/* Bottom Creator Card & User-Controlled Music Pill */}
       <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/95 via-black/60 to-transparent text-white z-20 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -600,15 +661,37 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
           </button>
         </div>
 
-        {/* Audio Track Info Marquee */}
+        {/* Audio Track Info & Custom Music Trigger */}
         <button
-          onClick={toggleMute}
-          className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/60 hover:bg-black/80 px-3 py-1 rounded-full w-fit backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
+          onClick={() => {
+            soundFx.playSwipeTick();
+            setShowMusicPicker(true);
+          }}
+          className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/60 hover:bg-black/80 px-3 py-1 rounded-full w-fit backdrop-blur-md border border-white/10 transition-colors cursor-pointer group"
+          title="Click to Choose or Trim Music"
         >
           <Music className={`w-3.5 h-3.5 text-cyan-400 ${!isMuted && isPlaying ? 'animate-pulse' : ''}`} />
-          <span className="truncate max-w-[220px]">Neon Cyber Lofi • Pulse Original Master</span>
+          <span className="truncate max-w-[200px]">
+            {selectedMusic ? `${selectedMusic.title} • ${selectedMusic.artist}` : 'No Music Selected (Click to Add)'}
+          </span>
+          <span className="text-[10px] text-slate-400 group-hover:text-cyan-300 ml-1">✏️</span>
         </button>
       </div>
+
+      {/* Music Selection, Trimming & Mixing Modal */}
+      <MusicPickerModal
+        isOpen={showMusicPicker}
+        onClose={() => setShowMusicPicker(false)}
+        selectedMusic={selectedMusic}
+        onSelectMusic={(music) => {
+          setSelectedMusic(music);
+          if (music) {
+            toast.success(`Music applied: "${music.title}" 🎶`);
+          } else {
+            toast('Music removed');
+          }
+        }}
+      />
     </div>
   );
 }
