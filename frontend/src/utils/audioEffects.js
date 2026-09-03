@@ -260,6 +260,94 @@ class SoundEngine {
     } catch (e) {}
   }
 
+  // 9. Cinematic Tension Riser (Pitch ascending sweep before key reveals)
+  playCinematicRiser() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 1.2);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(300, now);
+      filter.frequency.exponentialRampToValueAtTime(4000, now + 1.2);
+
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(0.16, now + 1.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 1.25);
+    } catch (e) {}
+  }
+
+  // 10. Mechanical Keyboard Typing Sound Burst (ASMR)
+  playKeyboardTyping() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      // 4 rapid keystrokes with slight timing jitter
+      [0, 0.08, 0.17, 0.26].forEach((delay) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const tapTime = now + delay;
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600 + Math.random() * 200, tapTime);
+        osc.frequency.exponentialRampToValueAtTime(120, tapTime + 0.03);
+
+        gain.gain.setValueAtTime(0.12, tapTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, tapTime + 0.035);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(tapTime);
+        osc.stop(tapTime + 0.035);
+      });
+    } catch (e) {}
+  }
+
+  // 11. Crisp Notification Bell Ding (for real-time message / follow alerts)
+  playNotificationDing() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, now); // B5 (Bright bell)
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.4);
+    } catch (e) {}
+  }
+
   // 9. Natural Voice-Over Narrator with Auto-Ducking
   speakNarrator(text, onEnd = null) {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
