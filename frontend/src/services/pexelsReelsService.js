@@ -26,6 +26,40 @@ const REEL_CATEGORIES = [
 // Curated 100+ High-Definition Vertical Videos fallback pool (100% working guaranteed)
 const CURATED_VERTICAL_REELS = [
   {
+    id: 'yt_short_1',
+    videoUrl: 'https://www.youtube.com/shorts/Oq6eoP0Jac0',
+    thumbnail: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600',
+    creatorName: 'Ravikant Singh',
+    creatorUsername: 'ravikant',
+    creatorAvatar: '/uploads/ravikant_avatar.jpg',
+    creatorProfileUrl: 'https://github.com/RavikantSingh76',
+    caption: 'Exclusive YouTube Shorts Feature on Pulse Social Hub! 🚀 #shorts #trending #viral #reels',
+    hashtags: ['#shorts', '#trending', '#viral', '#reels'],
+    likes: 45800,
+    comments: 980,
+    shares: 4200,
+    views: 189000,
+    duration: 30,
+    audioName: 'Trending Short Sound • Pulse Exclusive'
+  },
+  {
+    id: 'yt_short_2',
+    videoUrl: 'https://www.youtube.com/shorts/a2ILUL0x_Zk',
+    thumbnail: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=600',
+    creatorName: 'Ravikant Singh',
+    creatorUsername: 'ravikant',
+    creatorAvatar: '/uploads/ravikant_avatar.jpg',
+    creatorProfileUrl: 'https://github.com/RavikantSingh76',
+    caption: 'Dynamic High-Energy YouTube Shorts Flow on Pulse Reels ⚡ #pulse #shorts #creative',
+    hashtags: ['#pulse', '#shorts', '#creative', '#tech'],
+    likes: 38900,
+    comments: 720,
+    shares: 3100,
+    views: 154000,
+    duration: 25,
+    audioName: 'Pulse Viral Beats • Original Sound'
+  },
+  {
     id: 101,
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4',
     thumbnail: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600',

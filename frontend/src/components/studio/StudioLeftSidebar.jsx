@@ -78,6 +78,7 @@ export default function StudioLeftSidebar({
   const [activeTab, setActiveTab] = useState('media'); // 'media' | 'music' | 'text' | 'voice' | 'transitions' | 'filters' | 'sfx' | 'templates'
   const [selectedMusicCategory, setSelectedMusicCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const [previewingAudioId, setPreviewingAudioId] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -215,6 +216,85 @@ export default function StudioLeftSidebar({
               onChange={handleLocalMediaUpload}
               className="hidden"
             />
+
+            {/* YouTube Shorts / Online URL Import */}
+            <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black text-white flex items-center gap-1">
+                  <span className="text-red-500">▶</span>
+                  <span>Import YouTube Shorts / URL</span>
+                </span>
+                <span className="text-[9px] text-cyan-400 font-bold">1-Click</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={youtubeUrlInput}
+                  onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                  placeholder="Paste YouTube Shorts URL..."
+                  className="flex-1 px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-white placeholder-slate-500 outline-none focus:border-red-500"
+                />
+                <button
+                  onClick={() => {
+                    if (!youtubeUrlInput.trim()) return;
+                    soundFx.playChimeCTA();
+                    const url = youtubeUrlInput.trim();
+                    const isShort = url.includes('shorts') || url.includes('youtu');
+                    onAddMediaClip({
+                      id: `yt_${Date.now()}`,
+                      title: isShort ? 'YouTube Short Reel' : 'Online Video Stream',
+                      url,
+                      mediaType: 'VIDEO',
+                      duration: 15.0,
+                      trimStart: 0,
+                      trimEnd: 15.0,
+                      scale: 100,
+                      rotation: 0,
+                      opacity: 100,
+                      filter: activeFilter || 'none'
+                    });
+                    toast.success('YouTube Short imported to timeline! 🎬');
+                    setYoutubeUrlInput('');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-[11px] transition-colors cursor-pointer shrink-0"
+                >
+                  Import
+                </button>
+              </div>
+
+              {/* Quick Suggestion Chips */}
+              <div className="flex items-center gap-1 pt-1 overflow-x-auto scrollbar-none">
+                {[
+                  { label: '🔥 Short #1', url: 'https://www.youtube.com/shorts/Oq6eoP0Jac0' },
+                  { label: '⚡ Short #2', url: 'https://www.youtube.com/shorts/a2ILUL0x_Zk' }
+                ].map((s, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      soundFx.playChimeCTA();
+                      onAddMediaClip({
+                        id: `yt_quick_${idx}_${Date.now()}`,
+                        title: `YouTube Short (${idx + 1})`,
+                        url: s.url,
+                        mediaType: 'VIDEO',
+                        duration: 15.0,
+                        trimStart: 0,
+                        trimEnd: 15.0,
+                        scale: 100,
+                        rotation: 0,
+                        opacity: 100,
+                        filter: activeFilter || 'none'
+                      });
+                      toast.success(`Imported: ${s.label} to timeline! 🚀`);
+                    }}
+                    className="px-2 py-0.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] font-bold text-slate-300 hover:text-white whitespace-nowrap transition-colors cursor-pointer"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Stock Footage Library */}
             <div className="space-y-2">

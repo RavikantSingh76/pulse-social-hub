@@ -56,6 +56,14 @@ export default function ReelCard({
     ? (reel.media[0].url.startsWith('http') ? reel.media[0].url : `http://localhost:8080${reel.media[0].url}`)
     : (reel.videoUrl || '');
 
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return match ? match[1] : null;
+  };
+
+  const youtubeId = getYouTubeId(videoUrl);
+
   const audioTrack = REELS_AUDIO_TRACKS[index % REELS_AUDIO_TRACKS.length];
   const isOwner = user && user.id === reel.userId;
 
@@ -181,7 +189,17 @@ export default function ReelCard({
       className="reel-item relative w-full h-[calc(100vh-8.5rem)] md:h-[720px] max-w-[420px] mx-auto snap-start bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-800/90 select-none flex items-center justify-center my-4 group"
     >
       {/* 1. Video Player Element */}
-      {videoUrl && !hasError ? (
+      {youtubeId ? (
+        <div className="w-full h-full relative overflow-hidden bg-black flex items-center justify-center">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=${isActive ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&playsinline=1`}
+            title={reel.caption || 'Pulse Reel'}
+            className="w-full h-full object-cover scale-[1.03] border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : videoUrl && !hasError ? (
         <video
           ref={videoRef}
           src={videoUrl}
