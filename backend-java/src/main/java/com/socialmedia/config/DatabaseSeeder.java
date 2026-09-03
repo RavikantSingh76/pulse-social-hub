@@ -376,82 +376,77 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedReels(User ravikant, List<User> users) {
-        long existingReels = postRepository.countByPostType(Post.PostType.VIDEO);
-        if (existingReels >= 20) {
-            System.out.println("[DatabaseSeeder] Reels already seeded (" + existingReels + " video reels in DB).");
+        if (ravikant == null) return;
+
+        long ravikantReelsCount = postRepository.countByUserAndPostType(ravikant, Post.PostType.VIDEO);
+        if (ravikantReelsCount >= 100) {
+            System.out.println("✅ [DatabaseSeeder] Chief Admin Ravikant Singh already has " + ravikantReelsCount + " reels in DB.");
             return;
         }
 
-        System.out.println("⏳ [DatabaseSeeder] Seeding 25+ High-Quality Vertical Video Reels with Sound...");
+        System.out.println("⏳ [DatabaseSeeder] Seeding 100 Professional HD Reels for Ravikant Singh...");
 
         String[] reelVideoUrls = {
             "https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-night-sky-with-stars-and-a-full-moon-41617-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-waves-crashing-on-a-sandy-beach-42407-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-vertical-hands-typing-on-a-laptop-keyboard-41589-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-neon-lights-in-a-cyberpunk-city-street-42512-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-night-sky-with-stars-and-a-full-moon-41617-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-waves-crashing-on-a-sandy-beach-42407-large.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-vertical-drone-view-of-a-winding-mountain-road-42354-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-neon-lights-in-a-cyberpunk-city-street-42512-large.mp4"
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-people-working-in-a-modern-office-42488-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-tokyo-street-at-night-with-neon-signs-42490-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-forest-stream-in-the-sunlight-42468-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-city-street-in-the-rain-42502-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-fog-over-the-pine-trees-in-the-mountains-42463-large.mp4"
         };
 
-        String[] reelCaptions = {
-            "Late night coding session at Bengaluru Tech Park! Building real-time architectures with Spring Boot 3 & React 🚀 #reels #tech #bengaluru #coding",
-            "Neon Cyberpunk vibes in the city that never sleeps! 🌃 #nightcity #aesthetic #reels #vibes",
-            "The sunset view from Marine Drive, Mumbai! Truly majestic ✨ #mumbai #india #travel #reels",
-            "Exploring Transformer Attention mechanisms and LLM token generation in real-time 🧠 #ai #machinelearning #reels",
-            "Mechanical keyboard sound ASMR + late night debugging flow ☕ #devlife #coding #asmr #reels",
-            "Financial district architecture in Gurugram Cyberhub! 🏢 #cybercity #india #reels",
-            "Waves crashing against the shore at sunset. Pure tranquility 🌊 #nature #reels #peace",
-            "Shipping features at lightning speed with Vite and Tailwind CSS! ⚡ #webdev #react #reels",
-            "Winding roads of Western Ghats! Incredible scenic drive 🛣️ #travel #india #wanderlust #reels",
-            "Cyberpunk city street in full neon bloom! 🌌 #futuristic #neon #citylights #reels",
-            "Designing frictionless user experiences for 10M+ users. Less is truly more. ✨ #uiux #design #product #reels",
-            "Deploying high-concurrency microservices with sub-10ms response times! ⚡ #backend #java #cloud #reels"
+        String[] techTopics = {
+            "Building high-concurrency microservices with Spring Boot 3 & Virtual Threads! Sub-10ms response times at scale ⚡ #springboot #java #backend #cloud",
+            "Late night architecture sprint at Bengaluru Tech Park! Designing real-time distributed WebSockets 🚀 #bengaluru #tech #systemdesign #devlife",
+            "Optimizing React 18 client bundle with dynamic code splitting and tree shaking. Zero layout shifts! ✨ #reactjs #webdev #performance #frontend",
+            "Deep dive into Vector Databases and RAG pipelines for Enterprise AI Agents 🧠 #ai #rag #machinelearning #generativeai",
+            "Mechanical keyboard sound ASMR + refactoring legacy SQL queries into blazing-fast JPA specifications ☕ #coding #asmr #devlife #reels",
+            "The futuristic skyline view from Gurugram Cyber City! Technology meeting world-class infrastructure 🏢 #cybercity #india #reels #techhub",
+            "Building WebRTC peer-to-peer 1080p video calling with zero external servers! 🔥 #webrtc #javascript #realtime #reels",
+            "How we scaled database connection pooling with HikariCP to handle 50,000 req/sec without latency spikes 🚀 #databases #performance #scale",
+            "Designing frictionless Instagram-grade gesture interactions with Tailwind CSS and Framer Motion ✨ #uiux #design #product #frontend",
+            "Late night debugging with hot reload and Chrome DevTools. Coffee is life ☕ #developer #coding #nightowl #reels",
+            "Sunset at Marine Drive, Mumbai! Taking a quick break from production deployments 🌊 #mumbai #travel #sunset #reels",
+            "Containerizing full-stack microservices with multi-stage Docker builds and Kubernetes autoscaling ☸️ #devops #kubernetes #docker #cloud",
+            "Kafka event streaming vs RabbitMQ message queues: Which one should you pick for high-throughput feeds? 📊 #kafka #architecture #backend",
+            "Exploring AST (Abstract Syntax Tree) transformations in Vite compiler pipelines ⚡ #javascript #compiler #webdev",
+            "Zero-downtime database schema migrations with Flyway in Spring Boot 🛡️ #flyway #devops #spring #database",
+            "Writing zero-dependency Web Audio API sound synthesizers for instant UI haptic feedback! 🎧 #webaudio #sounddesign #frontend",
+            "Building offline-first progressive web apps with Service Workers and IndexedDB 📱 #pwa #mobile #offline #webdev",
+            "The magic of Tailwind CSS JIT compiler: Shaving 90% of unused CSS classes in production 🎨 #tailwindcss #css #webdesign",
+            "Winding roads of Western Ghats during monsoon. Pure developer bliss away from screens 🛣️ #wanderlust #india #travel #reels",
+            "Why Redis in-memory caching is essential for low-latency social feed ranking 🚀 #redis #caching #systemdesign",
+            "Building OAuth2 and JWT token rotation for bulletproof session security 🔐 #security #jwt #oauth2 #cybersecurity",
+            "Designing scalable notification pipelines with server-sent events and Redis Pub/Sub 🔔 #notifications #architecture #backend",
+            "Clean architecture principles: Decoupling domain logic from infrastructure layers 🏛️ #cleanarchitecture #softwareengineering #java",
+            "High-DPI responsive video player optimization with HTML5 Canvas and WebGL 🎬 #video #multimedia #canvas #reels",
+            "From junior engineer to tech leader: 5 non-obvious lessons in scaling engineering teams 👑 #leadership #mentorship #techcareers"
         };
 
-        int reelsCreated = 0;
+        int reelsNeeded = 100 - (int)ravikantReelsCount;
+        int seeded = 0;
 
-        // 1. Create 3 Reels for Chief Admin Ravikant Singh
-        if (ravikant != null) {
-            for (int r = 0; r < 3; r++) {
-                Post reel = Post.builder()
-                        .user(ravikant)
-                        .caption(reelCaptions[r % reelCaptions.length])
-                        .visibility(Post.Visibility.PUBLIC)
-                        .postType(Post.PostType.VIDEO)
-                        .viewCount((long)(12000 + (r * 3500)))
-                        .build();
-
-                Post savedReel = postRepository.save(reel);
-
-                postMediaRepository.save(PostMedia.builder()
-                        .post(savedReel)
-                        .mediaUrl(reelVideoUrls[r % reelVideoUrls.length])
-                        .mediaType(PostMedia.MediaType.VIDEO)
-                        .orderIndex(0)
-                        .build());
-
-                reelsCreated++;
-            }
-        }
-
-        // 2. Create 22 Reels for top creators
-        for (int i = 0; i < 22 && i < users.size(); i++) {
-            User creator = users.get(i);
-            if (ravikant != null && creator.getId().equals(ravikant.getId())) continue;
-
-            String caption = reelCaptions[(i + 3) % reelCaptions.length];
-            String videoUrl = reelVideoUrls[(i + 3) % reelVideoUrls.length];
+        for (int i = 0; i < reelsNeeded; i++) {
+            String topic = techTopics[i % techTopics.length];
+            String videoUrl = reelVideoUrls[i % reelVideoUrls.length];
+            long viewCount = 15000L + (long)(i * 720) + (long)(Math.random() * 8500);
 
             Post reel = Post.builder()
-                    .user(creator)
-                    .caption(caption)
+                    .user(ravikant)
+                    .caption(topic + (i >= techTopics.length ? " [Part " + (i / techTopics.length + 1) + "]" : ""))
                     .visibility(Post.Visibility.PUBLIC)
                     .postType(Post.PostType.VIDEO)
-                    .viewCount((long)(4500 + (i * 850)))
+                    .viewCount(viewCount)
+                    .createdAt(LocalDateTime.now().minusHours(i * 3L))
                     .build();
 
             Post savedReel = postRepository.save(reel);
@@ -463,9 +458,9 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .orderIndex(0)
                     .build());
 
-            reelsCreated++;
+            seeded++;
         }
 
-        System.out.println("✅ [DatabaseSeeder] Successfully seeded " + reelsCreated + " vertical video reels!");
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded " + seeded + " professional reels for Chief Admin Ravikant Singh! (Total: 100)");
     }
 }
