@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export const Avatar = ({ src, alt, size = 'md', username, isOnline = false, className = '' }) => {
+export const Avatar = ({ src, alt, size = 'md', username, isOnline = false, className = '', disableLink = false }) => {
   const sizeClasses = {
     xs: 'w-6 h-6 text-xs',
     sm: 'w-8 h-8 text-xs',
@@ -27,7 +27,7 @@ export const Avatar = ({ src, alt, size = 'md', username, isOnline = false, clas
     </div>
   );
 
-  if (username) {
+  if (username && !disableLink) {
     return (
       <Link to={`/profile/${username}`} className="hover:opacity-90 transition-opacity">
         {content}

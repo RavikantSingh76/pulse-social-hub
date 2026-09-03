@@ -20,8 +20,9 @@ export const RightSidebar = () => {
       setLoadingSuggestions(true);
       userService.getSuggestions(4)
         .then(res => {
-          if (res.success && res.data) {
-            setSuggestions(res.data);
+          const list = res.data?.data || res.data || (res.success ? res.data : []);
+          if (Array.isArray(list)) {
+            setSuggestions(list);
           }
         })
         .catch(() => {})
@@ -38,8 +39,9 @@ export const RightSidebar = () => {
     const timer = setTimeout(() => {
       userService.searchUsers(searchQuery, 5)
         .then(res => {
-          if (res.success && res.data) {
-            setSearchResults(res.data);
+          const list = res.data?.data || res.data || (res.success ? res.data : []);
+          if (Array.isArray(list)) {
+            setSearchResults(list);
           }
         })
         .catch(() => {});

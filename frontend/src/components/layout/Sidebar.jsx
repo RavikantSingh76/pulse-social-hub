@@ -123,7 +123,7 @@ export const Sidebar = ({ onOpenCreatePost }) => {
             to={`/profile/${user.username}`}
             className="flex items-center space-x-3 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
           >
-            <Avatar src={user.avatarUrl} username={user.username} size="md" isOnline={true} />
+            <Avatar src={user.avatarUrl} username={user.username} size="md" isOnline={true} disableLink={true} />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate flex items-center gap-1">
                 <span>{user.displayName}</span>

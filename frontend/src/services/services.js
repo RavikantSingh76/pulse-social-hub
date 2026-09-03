@@ -35,13 +35,19 @@ export const authService = {
 };
 
 export const userService = {
-  getProfile: (username) => api.get(`/users/${username}`),
+  getProfile: (username) => api.get(`/users/profile/${username}`),
   updateProfile: (data) => api.put('/users/profile', data),
   searchUsers: (query, limit = 5) => api.get(`/users/search?q=${encodeURIComponent(query)}&limit=${limit}`),
+  getSuggestions: (limit = 5) => api.get(`/users/suggestions?limit=${limit}`),
   followUser: (id) => api.post(`/users/${id}/follow`),
   unfollowUser: (id) => api.delete(`/users/${id}/follow`),
   getFollowers: (id) => api.get(`/users/${id}/followers`),
   getFollowing: (id) => api.get(`/users/${id}/following`),
+  getFollowRequests: () => api.get('/users/requests'),
+  acceptRequest: (requesterId) => api.post(`/users/requests/${requesterId}/accept`),
+  rejectRequest: (requesterId) => api.delete(`/users/requests/${requesterId}/reject`),
+  blockUser: (id) => api.post(`/users/${id}/block`),
+  unblockUser: (id) => api.delete(`/users/${id}/block`),
   getMutualFollowers: (id) => api.get(`/users/${id}/mutual`)
 };
 
