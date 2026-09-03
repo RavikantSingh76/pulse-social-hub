@@ -16,7 +16,8 @@ import { MessagesPage } from './pages/MessagesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { HashtagPage } from './pages/HashtagPage';
 import { PostDetailPage } from './pages/PostDetailPage';
-import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import StudioDashboardPage from './pages/StudioDashboardPage';
+import StudioEditorPage from './pages/StudioEditorPage';
 import { useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
@@ -82,7 +83,13 @@ export default function App() {
               <AdminDashboardPage />
             </ProtectedRoute>
           } />
+          <Route path="/studio" element={<StudioDashboardPage />} />
+          <Route path="/reel-editor" element={<Navigate to="/studio" replace />} />
         </Route>
+
+        {/* Dedicated Fullscreen Video Editor Workspace */}
+        <Route path="/studio/editor/:projectId" element={<StudioEditorPage />} />
+        <Route path="/studio/editor" element={<Navigate to="/studio/editor/new" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

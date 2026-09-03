@@ -30,6 +30,7 @@ export const Sidebar = ({ onOpenCreatePost }) => {
     { to: '/search', label: 'Search', icon: Search },
     { to: '/explore', label: 'Explore', icon: Compass },
     { to: '/reels', label: 'Reels', icon: Film },
+    { to: '/studio', label: 'Video Studio', icon: Sparkles, highlight: true },
     { to: '/watch', label: 'Watch', icon: Tv },
     { to: '/creator/studio', label: 'Creator Studio', icon: BarChart3 },
     { to: '/bookmarks', label: 'Saved', icon: Bookmark },
