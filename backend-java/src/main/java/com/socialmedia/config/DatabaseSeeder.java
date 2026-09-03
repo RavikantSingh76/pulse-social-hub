@@ -48,16 +48,25 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private void seedAdminRavikant() {
         String email = "ravikantsinghravi7@gmail.com";
-        if (!userRepository.existsByEmailIgnoreCase(email) && !userRepository.existsByUsernameIgnoreCase("ravikant")) {
+        Optional<User> existing = userRepository.findByEmailIgnoreCase(email);
+        if (existing.isPresent()) {
+            User u = existing.get();
+            u.setAvatarUrl("/uploads/ravikant_avatar.jpg");
+            u.setWebsite("https://github.com/RavikantSingh76");
+            u.setDisplayName("Ravikant Singh");
+            u.setIsVerified(true);
+            userRepository.save(u);
+            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh avatar & GitHub link updated!");
+        } else if (!userRepository.existsByUsernameIgnoreCase("ravikant")) {
             User ravikant = User.builder()
                     .username("ravikant")
                     .email(email)
                     .password(passwordEncoder.encode("Admin@123"))
                     .displayName("Ravikant Singh")
-                    .avatarUrl("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80")
+                    .avatarUrl("/uploads/ravikant_avatar.jpg")
                     .coverUrl("https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80")
                     .bio("👑 Chief Administrator & Full Stack Lead | Building next-gen social platforms | Connect with me! 🚀")
-                    .website("https://github.com/ravikantsingh")
+                    .website("https://github.com/RavikantSingh76")
                     .location("Bengaluru, India")
                     .role(User.Role.ADMIN)
                     .isVerified(true)
@@ -65,7 +74,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .build();
 
             userRepository.save(ravikant);
-            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created (ravikantsinghravi7@gmail.com / Admin@123)");
+            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created with custom avatar (ravikantsinghravi7@gmail.com / Admin@123)");
         }
     }
 
