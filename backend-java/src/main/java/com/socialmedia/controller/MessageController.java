@@ -20,7 +20,7 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    @GetMapping("/conversations")
+    @GetMapping(path = {"/conversations", "/messages/conversations"})
     public ResponseEntity<ApiResponse<List<ConversationResponse>>> getConversations(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
@@ -67,7 +67,7 @@ public class MessageController {
         return ResponseEntity.ok(ApiResponse.success("Left group", "OK"));
     }
 
-    @GetMapping("/conversations/{id}/messages")
+    @GetMapping(path = {"/conversations/{id}/messages", "/messages/{id}"})
     public ResponseEntity<ApiResponse<List<MessageResponse>>> getMessages(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id) {

@@ -38,15 +38,28 @@ public class DatabaseSeeder implements CommandLineRunner {
     private HashtagRepository hashtagRepository;
 
     @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private ConversationMemberRepository conversationMemberRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        seedAdminRavikant();
-        seed100IndianUsers();
+        User ravikant = seedAdminRavikant();
+        List<User> indianUsers = seed100IndianUsers();
+        seedFollowersAndConversationsForRavikant(ravikant, indianUsers);
     }
 
-    private void seedAdminRavikant() {
+    private User seedAdminRavikant() {
         String email = "ravikantsinghravi7@gmail.com";
         Optional<User> existing = userRepository.findByEmailIgnoreCase(email);
         if (existing.isPresent()) {
@@ -55,8 +68,11 @@ public class DatabaseSeeder implements CommandLineRunner {
             u.setWebsite("https://github.com/RavikantSingh76");
             u.setDisplayName("Ravikant Singh");
             u.setIsVerified(true);
-            userRepository.save(u);
-            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh avatar & GitHub link updated!");
+            u.setBio("👑 Chief Administrator & Full Stack Lead | Building next-gen social platforms | GitHub: @RavikantSingh76 🚀");
+            u.setLocation("Bengaluru, India");
+            User saved = userRepository.save(u);
+            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh avatar & profile updated!");
+            return saved;
         } else if (!userRepository.existsByUsernameIgnoreCase("ravikant")) {
             User ravikant = User.builder()
                     .username("ravikant")
@@ -65,7 +81,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .displayName("Ravikant Singh")
                     .avatarUrl("/uploads/ravikant_avatar.jpg")
                     .coverUrl("https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80")
-                    .bio("👑 Chief Administrator & Full Stack Lead | Building next-gen social platforms | Connect with me! 🚀")
+                    .bio("👑 Chief Administrator & Full Stack Lead | Building next-gen social platforms | GitHub: @RavikantSingh76 🚀")
                     .website("https://github.com/RavikantSingh76")
                     .location("Bengaluru, India")
                     .role(User.Role.ADMIN)
@@ -73,18 +89,22 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .isPrivate(false)
                     .build();
 
-            userRepository.save(ravikant);
-            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created with custom avatar (ravikantsinghravi7@gmail.com / Admin@123)");
+            User saved = userRepository.save(ravikant);
+            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created (ravikantsinghravi7@gmail.com / Admin@123)");
+            return saved;
+        } else {
+            return userRepository.findByUsernameIgnoreCase("ravikant").orElse(null);
         }
     }
 
-    private void seed100IndianUsers() {
-        if (userRepository.count() >= 95) {
-            System.out.println("[DatabaseSeeder] Indian users already seeded (" + userRepository.count() + " users in DB).");
-            return;
+    private List<User> seed100IndianUsers() {
+        List<User> existingUsers = userRepository.findAll();
+        if (existingUsers.size() >= 100) {
+            System.out.println("[DatabaseSeeder] Indian users already seeded (" + existingUsers.size() + " users in DB).");
+            return existingUsers;
         }
 
-        System.out.println("⏳ [DatabaseSeeder] Seeding 100 Indian Users & Content...");
+        System.out.println("⏳ [DatabaseSeeder] Seeding 100 Indian Professionals & Content...");
 
         String defaultUserPwd = passwordEncoder.encode("User@123");
 
@@ -115,16 +135,16 @@ public class DatabaseSeeder implements CommandLineRunner {
         };
 
         String[] techBios = {
-            "🚀 Full Stack Developer @ Bengaluru | Passionate about Java, React & Open Source | Coffee & Code ☕",
-            "🎨 UI/UX Designer & Creative Strategist | Crafting intuitive design systems #DesignSystem",
-            "🤖 AI Researcher & Machine Learning Enthusiast | Exploring LLMs and Generative Tech 🧠",
-            "📱 Mobile App Specialist (React Native & Flutter) | Building high-performance consumer apps",
-            "☁️ Cloud Architect & DevOps Geek | AWS Certified | Kubernetes & Terraform Explorer",
-            "📸 Photography & Travel Explorer | Capturing the essence of Incredible India 🇮🇳",
-            "💡 Startup Founder & Product Strategist | Scaling digital solutions | Angel Investor",
-            "📊 Data Scientist | Transforming data into strategic insights | Python & SQL wizard 📈",
-            "⚡ Frontend Craftsman | Tailwind CSS & Modern Web Animations #WebDev",
-            "🎯 Growth Marketer & Content Creator | Sharing daily tips on tech careers & productivity"
+            "🚀 Senior Software Engineer @ Bengaluru | Java, Spring Boot & Distributed Systems | Coffee & Code ☕",
+            "🎨 Lead Product Designer | Crafting intuitive design systems & micro-interactions #UIUX",
+            "🤖 AI & Deep Learning Researcher | Exploring LLMs, RAG & Transformer Architectures 🧠",
+            "📱 Principal Mobile Architect (Flutter & React Native) | Building apps for millions of users",
+            "☁️ Cloud Infrastructure Lead | AWS Certified Solutions Architect | Kubernetes & Terraform",
+            "📸 Travel & Culture Photographer | Documenting the heritage and vibrance of Incredible India 🇮🇳",
+            "💡 Founder & Angel Investor | Scaling B2B SaaS platforms | Tech Enthusiast",
+            "📊 Senior Data Scientist | Transforming petabytes of data into actionable insights 📈",
+            "⚡ Frontend Engineer | React, Vite, Tailwind CSS & Web Performance Specialist #WebDev",
+            "🎯 Product Growth Strategist | Community Builder | Sharing daily productivity insights"
         };
 
         String[] cities = {
@@ -135,16 +155,16 @@ public class DatabaseSeeder implements CommandLineRunner {
         };
 
         String[] samplePostCaptions = {
-            "Super excited to launch our latest full-stack project built with Spring Boot 3 & React! 🚀 What a journey. #coding #tech #react #java",
-            "Golden hour in the city! 🌇 Incredible India in all its vibrant glory. #travel #photography #incredibleindia",
-            "Architecture review done! Clean code, decoupled microservices, and fast caching are true game changers. 💻 #backend #engineering",
-            "Weekend hackathon at Bengaluru tech hub! Meeting so many inspiring founders and developers today. ⚡ #startup #community #bengaluru",
-            "Morning routine: Dark mode on, fresh filter coffee, and clean commits. What are you building this week? ☕ #developer #productivity",
-            "Exploring the newest Generative AI workflows. The leap in productivity is astounding! 🤖 #ai #innovation #future",
-            "Designing with empathy: minimalism, accessible contrasts, and smooth micro-interactions. ✨ #design #uiux #creativity",
-            "Great evening attending the national tech summit in Delhi NCR. Inspiring keynotes on India's digital public infrastructure. 🇮🇳 #technology #digitalindia",
-            "Just crossed another milestone in our cloud infrastructure optimization! Reduced latency by 45%. 📊 #devops #cloud #performance",
-            "Sunday vibes with good books and tech podcasts. Recharging for another high-impact week ahead! 📚 #learning #growth #weekend"
+            "Just deployed our latest high-concurrency microservices pipeline! Reduced API response times to under 15ms. 🚀 #tech #java #springboot #backend",
+            "Golden hour at Bengaluru tech corridor! The city never stops innovating. 🌇 #bengaluru #india #technology",
+            "System design tip: Never underestimate the power of idempotency and asynchronous event queues in distributed architectures. 💻 #engineering #architecture",
+            "Weekend hackathon showcase! So thrilled to mentor young college developers building generative AI applications. ⚡ #startup #community #hackathon",
+            "Clean workspace, dark mode UI, and continuous integration. Ready for an impactful week ahead! ☕ #productivity #developer",
+            "Exploring real-time WebSocket communication and WebRTC signaling protocols. The future of collaboration is interactive! 🤖 #websockets #realtime #innovation",
+            "Design philosophy: Great software is invisible. It anticipates user needs and removes friction effortlessly. ✨ #design #uiux #product",
+            "Attending the national technology conference in Delhi NCR. Inspiring discussions on India's digital transformation. 🇮🇳 #digitalindia #leadership",
+            "Optimized our database indexes and query cache hit rates today. Database CPU usage dropped by 40%! 📊 #database #performance",
+            "Sunday reflections on mentorship and engineering leadership. Continuous learning is the key. 📚 #growth #leadership #tech"
         };
 
         String[] sampleImages = {
@@ -165,11 +185,16 @@ public class DatabaseSeeder implements CommandLineRunner {
             String lastName = lastNames[i % lastNames.length];
             String username = (firstName + "." + lastName + (i + 1)).toLowerCase();
             String email = (firstName + "." + lastName + (i + 1) + "@pulse.in").toLowerCase();
+
+            if (userRepository.existsByEmailIgnoreCase(email) || userRepository.existsByUsernameIgnoreCase(username)) {
+                continue;
+            }
+
             String displayName = firstName + " " + lastName;
             String bio = techBios[i % techBios.length];
             String city = cities[i % cities.length];
             String avatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=" + username;
-            boolean isVerified = (i % 7 == 0); // 1 in 7 verified creators
+            boolean isVerified = (i % 6 == 0); // Verified creator badge
 
             User user = User.builder()
                     .username(username)
@@ -188,7 +213,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             User savedUser = userRepository.save(user);
             createdUsers.add(savedUser);
 
-            // Add realistic post for every 2nd user
+            // Post creation
             if (i % 2 == 0) {
                 String caption = samplePostCaptions[i % samplePostCaptions.length];
                 Post post = Post.builder()
@@ -196,12 +221,11 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .caption(caption)
                         .visibility(Post.Visibility.PUBLIC)
                         .postType(Post.PostType.POST)
-                        .viewCount((long)(150 + (i * 12)))
+                        .viewCount((long)(200 + (i * 15)))
                         .build();
 
                 Post savedPost = postRepository.save(post);
 
-                // Add photo
                 String img = sampleImages[i % sampleImages.length];
                 postMediaRepository.save(PostMedia.builder()
                         .post(savedPost)
@@ -209,48 +233,149 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .mediaType(PostMedia.MediaType.IMAGE)
                         .orderIndex(0)
                         .build());
-
-                // Seed comments and likes
-                if (i > 1 && !createdUsers.isEmpty()) {
-                    User commenter = createdUsers.get(new Random().nextInt(createdUsers.size()));
-                    commentRepository.save(Comment.builder()
-                            .post(savedPost)
-                            .user(commenter)
-                            .content("Brilliant work " + firstName + "! Really inspiring. 👍")
-                            .build());
-
-                    likeRepository.save(Like.builder()
-                            .post(savedPost)
-                            .user(commenter)
-                            .build());
-                }
             }
 
-            // Add story for creators
+            // Stories
             if (isVerified) {
                 storyRepository.save(Story.builder()
                         .user(savedUser)
-                        .mediaUrl(sampleImages[(i + 3) % sampleImages.length])
+                        .mediaUrl(sampleImages[(i + 2) % sampleImages.length])
                         .mediaType(Story.MediaType.IMAGE)
                         .caption("Live from " + city + " 🇮🇳")
                         .audience(Story.Audience.PUBLIC)
                         .expiresAt(LocalDateTime.now().plusHours(24))
                         .build());
             }
+        }
 
-            // Follow previous users to create active network
-            if (createdUsers.size() > 2) {
-                User toFollow = createdUsers.get(new Random().nextInt(createdUsers.size() - 1));
-                if (!toFollow.getId().equals(savedUser.getId()) && followRepository.findByFollowerAndFollowing(savedUser, toFollow).isEmpty()) {
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded 100 Indian Professionals!");
+        return userRepository.findAll();
+    }
+
+    private void seedFollowersAndConversationsForRavikant(User ravikant, List<User> allUsers) {
+        if (ravikant == null || allUsers == null || allUsers.isEmpty()) return;
+
+        System.out.println("⏳ [DatabaseSeeder] Seeding Followers, Following, and Direct Messages for Ravikant Singh...");
+
+        int followersAdded = 0;
+        int conversationsAdded = 0;
+
+        String[] greetings = {
+            "Hey Ravikant! Loved the architecture of Pulse Social Hub. The Spring Boot 3 + React stack is blazing fast! ⚡",
+            "Hi Ravikant, great to connect with you! Are you open for a tech speaker session at Bengaluru Tech Summit next month?",
+            "Hello Chief Admin! Just joined Pulse, the dark navy glassmorphic UI is super sleek! 🚀",
+            "Hey Ravikant! Impressive work on the real-time WebSocket messaging and multi-reaction system. Truly production-grade!",
+            "Hi Ravikant, saw your GitHub profile @RavikantSingh76. Excellent open-source contributions! Keep building. 👏",
+            "Hey! Would love to collaborate on a full-stack AI project with you. Let me know when you're free to chat.",
+            "Greetings Ravikant! Loved your latest post on clean code & system performance. Cheers from Hyderabad! ☕",
+            "Hi Ravikant! Just checked out the 9:16 vertical Reels and Instagram-style Story viewer. Beautiful implementation!"
+        };
+
+        String[] adminReplies = {
+            "Hey! Thanks so much for the kind words. Glad you're enjoying the Pulse platform experience! 🚀",
+            "Hi! Thanks for reaching out. I'd love to connect and discuss more about the summit.",
+            "Welcome to Pulse! Feel free to share your thoughts, posts, and feedback anytime. 🌟",
+            "Thank you! We put a lot of focus into clean architecture, low-latency APIs, and seamless real-time sockets.",
+            "Appreciate the support! Keep an eye out for upcoming creator studio features and new updates."
+        };
+
+        for (int i = 0; i < allUsers.size(); i++) {
+            User user = allUsers.get(i);
+            if (user.getId().equals(ravikant.getId())) continue;
+
+            // 1. Make 70+ users follow Ravikant Singh
+            if (i < 75 && followRepository.findByFollowerAndFollowing(user, ravikant).isEmpty()) {
+                followRepository.save(Follow.builder()
+                        .follower(user)
+                        .following(ravikant)
+                        .status(Follow.Status.ACCEPTED)
+                        .build());
+                followersAdded++;
+
+                // Notification for follow
+                notificationRepository.save(Notification.builder()
+                        .recipient(ravikant)
+                        .actor(user)
+                        .type(Notification.Type.FOLLOW)
+                        .entityId(user.getId())
+                        .entityType("USER")
+                        .message("started following you.")
+                        .isRead(i > 3)
+                        .build());
+            }
+
+            // 2. Make Ravikant follow top 18 creators back (mutual following)
+            if (i < 18 && followRepository.findByFollowerAndFollowing(ravikant, user).isEmpty()) {
+                followRepository.save(Follow.builder()
+                        .follower(ravikant)
+                        .following(user)
+                        .status(Follow.Status.ACCEPTED)
+                        .build());
+            }
+
+            // 3. Interconnect other users for realistic network
+            if (i > 0 && i < 60) {
+                User other = allUsers.get((i * 3 + 1) % allUsers.size());
+                if (!other.getId().equals(user.getId()) && followRepository.findByFollowerAndFollowing(user, other).isEmpty()) {
                     followRepository.save(Follow.builder()
-                            .follower(savedUser)
-                            .following(toFollow)
+                            .follower(user)
+                            .following(other)
                             .status(Follow.Status.ACCEPTED)
                             .build());
                 }
             }
+
+            // 4. Create Direct Messages with Ravikant Singh (first 12 users)
+            if (i < 12) {
+                List<Conversation> existingConvs = conversationRepository.findUserConversations(ravikant.getId());
+                boolean exists = false;
+                for (Conversation c : existingConvs) {
+                    if (conversationMemberRepository.findByConversationAndUser(c, user).isPresent()) {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists) {
+                    Conversation conv = conversationRepository.save(Conversation.builder()
+                            .isGroup(false)
+                            .build());
+
+                    conversationMemberRepository.save(ConversationMember.builder()
+                            .conversation(conv)
+                            .user(ravikant)
+                            .build());
+
+                    conversationMemberRepository.save(ConversationMember.builder()
+                            .conversation(conv)
+                            .user(user)
+                            .build());
+
+                    // Add incoming message from user to Ravikant
+                    String msgText = greetings[i % greetings.length];
+                    messageRepository.save(Message.builder()
+                            .conversation(conv)
+                            .sender(user)
+                            .messageText(msgText)
+                            .isRead(i > 2)
+                            .build());
+
+                    // Add reply from Ravikant for top 6 chats
+                    if (i < 6) {
+                        String reply = adminReplies[i % adminReplies.length];
+                        messageRepository.save(Message.builder()
+                                .conversation(conv)
+                                .sender(ravikant)
+                                .messageText(reply)
+                                .isRead(true)
+                                .build());
+                    }
+
+                    conversationsAdded++;
+                }
+            }
         }
 
-        System.out.println("✅ [DatabaseSeeder] Successfully seeded 100 Indian Users with active feeds, stories, and interactions!");
+        System.out.println("✅ [DatabaseSeeder] Seeded " + followersAdded + " followers for Ravikant Singh and " + conversationsAdded + " direct conversations!");
     }
 }
