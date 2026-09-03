@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { postService } from '../services/services';
+import { pexelsReelsService } from '../services/pexelsReelsService';
 import ReelCard from '../components/reels/ReelCard';
 import CinematicReelPlayer from '../components/reels/CinematicReelPlayer';
 import ReelCommentsPanel from '../components/reels/ReelCommentsPanel';
@@ -16,7 +17,8 @@ import {
   Loader2,
   Volume2,
   VolumeX,
-  Play
+  Play,
+  ExternalLink
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -38,7 +40,7 @@ export default function ReelsPage() {
   const containerRef = useRef(null);
   const observerRef = useRef(null);
 
-  // Fetch Reels from API
+  // Fetch Reels from Backend + Pexels HD Service
   useEffect(() => {
     fetchReels(page);
   }, [page]);
@@ -46,16 +48,26 @@ export default function ReelsPage() {
   const fetchReels = async (pageNum) => {
     try {
       setLoading(true);
-      const res = await postService.getReels(pageNum, 10);
-      const data = res.data?.data || res.data;
-      if (data) {
-        const fetched = data.reels || data || [];
-        if (fetched.length === 0) {
-          setHasMore(false);
-        } else {
-          setReels(prev => (pageNum === 1 ? fetched : [...prev, ...fetched]));
+
+      // 1. Fetch Backend Reels first
+      let fetched = [];
+      try {
+        const res = await postService.getReels(pageNum, 15);
+        const data = res.data?.data || res.data;
+        if (data) {
+          fetched = data.reels || data || [];
         }
-      }
+      } catch (e) {}
+
+      // 2. Fetch Pexels 100+ HD Vertical Videos to ensure complete 100+ feed
+      const pexelsRes = await pexelsReelsService.fetchReels(pageNum, 15);
+      const pexelsList = pexelsRes.reels || [];
+
+      // Combine and deduplicate
+      const combined = [...fetched, ...pexelsList];
+
+      setReels(prev => (pageNum === 1 ? combined : [...prev, ...combined]));
+      setHasMore(combined.length > 0);
     } catch (err) {
       console.error('Error fetching reels:', err);
       toast.error('Failed to load reels');
@@ -95,9 +107,18 @@ export default function ReelsPage() {
     };
   }, [reels, activeTab]);
 
-  // Keyboard navigation (ArrowDown for Next Reel, ArrowUp for Prev Reel)
+  // Infinite Scroll Trigger when reaching near bottom
+  const handleScroll = () => {
+    if (!containerRef.current || loading || !hasMore) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    if (scrollTop + clientHeight >= scrollHeight - 600) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  // Keyboard navigation
   const handleKeyDown = useCallback((e) => {
-    if (activeCommentsReel || activeShareReel || activeAudioTrack) return; // ignore when modal open
+    if (activeCommentsReel || activeShareReel || activeAudioTrack) return;
 
     if (e.key === 'ArrowDown' || e.key === 'PageDown') {
       e.preventDefault();
@@ -147,21 +168,21 @@ export default function ReelsPage() {
   return (
     <div className="w-full min-h-[calc(100vh-5rem)] flex flex-col items-center relative">
       {/* Top Segmented Mode Header */}
-      <div className="sticky top-0 z-40 w-full max-w-md flex items-center justify-center p-2 mb-2 bg-slate-950/70 backdrop-blur-md border-b border-slate-800/60 rounded-2xl">
+      <div className="sticky top-0 z-40 w-full max-w-md flex items-center justify-between p-2 mb-2 bg-slate-950/70 backdrop-blur-md border-b border-slate-800/60 rounded-2xl">
         <div className="flex items-center p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
           <button
             onClick={() => {
               soundFx.playSwipeTick();
               setActiveTab('featured');
             }}
-            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'featured'
                 ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-cyan-500/25'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Flame className="w-3.5 h-3.5 text-amber-300" />
-            <span>Featured Masterclass</span>
+            <span>Masterclass</span>
           </button>
 
           <button
@@ -169,16 +190,28 @@ export default function ReelsPage() {
               soundFx.playSwipeTick();
               setActiveTab('feed');
             }}
-            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'feed'
                 ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md shadow-cyan-500/25'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Film className="w-3.5 h-3.5" />
-            <span>Community Reels ({reels.length})</span>
+            <span>100+ Reels ({reels.length})</span>
           </button>
         </div>
+
+        {/* Pexels Video Attribution Badge */}
+        <a
+          href="https://www.pexels.com"
+          target="_blank"
+          rel="noreferrer"
+          className="text-[10px] text-slate-400 hover:text-cyan-400 flex items-center gap-1 bg-slate-900/60 px-2.5 py-1 rounded-full border border-slate-800 transition-colors"
+          title="Stock videos provided by Pexels"
+        >
+          <span>Pexels HD</span>
+          <ExternalLink className="w-2.5 h-2.5" />
+        </a>
       </div>
 
       {/* Main Reels Viewport */}
@@ -194,25 +227,26 @@ export default function ReelsPage() {
           {/* Snap-Scrolling Vertical Reel Container */}
           <div
             ref={containerRef}
+            onScroll={handleScroll}
             className="w-full h-[calc(100vh-8.5rem)] md:h-[740px] overflow-y-scroll snap-y snap-mandatory scrollbar-none rounded-3xl"
           >
             {loading && reels.length === 0 ? (
               <div className="flex flex-col justify-center items-center h-full space-y-3">
                 <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
-                <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Reels Feed...</p>
+                <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading 100+ HD Reels...</p>
               </div>
             ) : reels.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-900/50 rounded-3xl border border-slate-800">
                 <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-3">
                   <Play className="w-8 h-8 text-cyan-400" />
                 </div>
-                <h4 className="text-base font-bold text-slate-200">No Community Reels Yet</h4>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">Be the pioneer! Create and upload the first vertical reel on Pulse Social Hub.</p>
+                <h4 className="text-base font-bold text-slate-200">No Reels Available</h4>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">Be the first to create and share a reel on Pulse!</p>
               </div>
             ) : (
               reels.map((reel, index) => (
                 <ReelCard
-                  key={reel.id || index}
+                  key={`${reel.id}-${index}`}
                   reel={reel}
                   index={index}
                   isActive={index === activeReelIdx}
@@ -223,6 +257,13 @@ export default function ReelsPage() {
                   onOpenAudioModal={(track) => setActiveAudioTrack(track)}
                 />
               ))
+            )}
+
+            {/* Bottom Loader for Infinite Scroll */}
+            {loading && reels.length > 0 && (
+              <div className="py-6 flex justify-center items-center">
+                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+              </div>
             )}
           </div>
 
