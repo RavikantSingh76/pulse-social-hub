@@ -219,10 +219,10 @@ export default function StudioTimeline({
           {/* TRACK 2: Text & Captions Track */}
           <div className="pt-1.5 px-2">
             <div className="relative h-9 rounded-xl bg-slate-900/30 border border-slate-800/40 overflow-hidden">
-              {textLayers.map((layer) => {
-                const leftPx = (layer.startTime || 0) * zoomLevel;
-                const widthPx = (layer.duration || 3) * zoomLevel;
-                const isSelected = selectedElementId === layer.id;
+              {(textLayers || []).filter(Boolean).map((layer) => {
+                const leftPx = (layer?.startTime || 0) * zoomLevel;
+                const widthPx = (layer?.duration || 3) * zoomLevel;
+                const isSelected = selectedElementId === layer?.id;
 
                 return (
                   <div

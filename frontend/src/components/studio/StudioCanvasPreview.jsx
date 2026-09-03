@@ -183,11 +183,11 @@ export default function StudioCanvasPreview({
           )}
 
           {/* Active Text Layers Overlay */}
-          {textLayers.map((layer) => {
-            const start = layer.startTime || 0;
-            const end = start + (layer.duration || 3);
+          {(textLayers || []).filter(Boolean).map((layer) => {
+            const start = layer?.startTime || 0;
+            const end = start + (layer?.duration || 3);
             const isVisible = currentTime >= start && currentTime <= end;
-            const isSelected = selectedElementId === layer.id;
+            const isSelected = selectedElementId === layer?.id;
 
             if (!isVisible) return null;
 
