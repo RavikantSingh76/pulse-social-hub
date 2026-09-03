@@ -3,7 +3,6 @@ package com.socialmedia.service;
 import com.socialmedia.dto.Dtos.*;
 import com.socialmedia.entity.*;
 import com.socialmedia.repository.*;
-import com.socialmedia.websocket.WebSocketConfig.ChatWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,9 +41,6 @@ public class StoryService {
 
     @Autowired
     private CloseFriendService closeFriendService;
-
-    @Autowired
-    private ChatWebSocketHandler webSocketHandler;
 
     private static final String UPLOAD_DIR = "uploads/";
 
@@ -205,7 +200,9 @@ public class StoryService {
 
     @Transactional
     public void deleteHighlight(Long userId, Long highlightId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found");
+        }
         StoryHighlight highlight = highlightRepository.findById(highlightId).orElseThrow(() -> new RuntimeException("Highlight not found"));
         if (!highlight.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized");
