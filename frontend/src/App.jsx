@@ -16,6 +16,7 @@ import { MessagesPage } from './pages/MessagesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { HashtagPage } from './pages/HashtagPage';
 import { PostDetailPage } from './pages/PostDetailPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import StudioDashboardPage from './pages/StudioDashboardPage';
 import StudioEditorPage from './pages/StudioEditorPage';
 import { useAuth } from './context/AuthContext';
