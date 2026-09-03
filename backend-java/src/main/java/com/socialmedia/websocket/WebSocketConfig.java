@@ -1,5 +1,6 @@
 package com.socialmedia.websocket;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             try {
-                Map<String, Object> payload = objectMapper.readValue(message.getPayload(), Map.class);
+                Map<String, Object> payload = objectMapper.readValue(message.getPayload(), new TypeReference<Map<String, Object>>() {});
                 String action = (String) payload.get("action");
 
                 if ("REGISTER".equals(action)) {
