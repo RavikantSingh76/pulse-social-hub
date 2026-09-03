@@ -23,19 +23,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     private PostMediaRepository postMediaRepository;
 
     @Autowired
-    private LikeRepository likeRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
     private FollowRepository followRepository;
 
     @Autowired
     private StoryRepository storyRepository;
-
-    @Autowired
-    private HashtagRepository hashtagRepository;
 
     @Autowired
     private ConversationRepository conversationRepository;
