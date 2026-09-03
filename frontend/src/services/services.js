@@ -85,8 +85,8 @@ export const storyService = {
   recordView: (id) => api.post(`/stories/${id}/view`),
   reactToStory: (id, emoji) => api.post(`/stories/${id}/react?emoji=${encodeURIComponent(emoji)}`),
   replyToStory: (id, text) => api.post(`/stories/${id}/reply`, { text }),
-  deleteStory: (id) => api.delete(`/stories/${id}`),
   getHighlights: (username) => api.get(`/stories/highlights/${username}`),
+  getUserHighlights: (username) => api.get(`/stories/highlights/${username}`),
   createHighlight: (data) => api.post('/stories/highlights', data),
   deleteHighlight: (id) => api.delete(`/stories/highlights/${id}`)
 };
