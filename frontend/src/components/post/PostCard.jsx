@@ -4,6 +4,7 @@ import { Avatar } from '../common/Avatar';
 import { CommentSection } from '../comment/CommentSection';
 import { ReportModal } from '../common/ReportModal';
 import { EditPostModal } from './EditPostModal';
+import { ShareModal } from './ShareModal';
 import ReactionPicker from '../common/ReactionPicker';
 import { useAuth } from '../../context/AuthContext';
 import { postService } from '../../services/services';
@@ -19,7 +20,8 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Smile
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -35,8 +37,10 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [likeAnimation, setLikeAnimation] = useState(false);
+  const [showHeartPop, setShowHeartPop] = useState(false);
+  const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
 
   const isOwner = user && user.id === post.userId;
   const isAdmin = user && user.role === 'ADMIN';
@@ -50,15 +54,26 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
 
     try {
       const res = await postService.toggleReaction(post.id, reactionType);
-      if (res.data?.success) {
-        setIsLiked(res.data.data.is_liked);
-        setCurrentReaction(res.data.data.current_reaction);
-        setLikesCount(res.data.data.likes_count);
-        if (res.data.data.is_liked) setLikeAnimation(true);
+      const data = res.data?.data || res.data;
+      if (data) {
+        setIsLiked(data.is_liked);
+        setCurrentReaction(data.current_reaction);
+        setLikesCount(data.likes_count);
+        if (data.is_liked) {
+          setShowHeartPop(true);
+          setTimeout(() => setShowHeartPop(false), 900);
+        }
       }
     } catch (err) {
       toast.error('Failed to update reaction');
     }
+  };
+
+  // Double tap to like
+  const handleDoubleTap = () => {
+    handleSelectReaction('LOVE');
+    setShowHeartPop(true);
+    setTimeout(() => setShowHeartPop(false), 900);
   };
 
   const handleSave = async () => {
@@ -68,16 +83,12 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
     }
     try {
       const res = await postService.toggleSave(post.id);
-      setIsSaved(res.data.data.is_saved);
-      toast.success(res.data.data.is_saved ? 'Post saved to bookmarks 🔖' : 'Post removed from bookmarks');
+      const data = res.data?.data || res.data;
+      setIsSaved(data.is_saved);
+      toast.success(data.is_saved ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks');
     } catch (err) {
       toast.error('Failed to bookmark post');
     }
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
-    toast.success('Post link copied to clipboard! 📋');
   };
 
   const handleDelete = async () => {
@@ -102,7 +113,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           <Link
             key={index}
             to={`/hashtags/${tag}`}
-            className="text-primary-600 dark:text-primary-400 font-semibold hover:underline"
+            className="text-cyan-400 font-semibold hover:underline"
           >
             {part}
           </Link>
@@ -113,7 +124,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           <Link
             key={index}
             to={`/profile/${username}`}
-            className="text-pink-600 dark:text-pink-400 font-semibold hover:underline"
+            className="text-pink-400 font-semibold hover:underline"
           >
             {part}
           </Link>
@@ -124,39 +135,43 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
   };
 
   const formattedTime = post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : '';
+  const captionText = post.caption || '';
+  const isLongCaption = captionText.length > 100;
 
   return (
-    <article className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/70 dark:border-slate-800 mb-6 shadow-sm overflow-hidden transition-all duration-200">
-      {/* Header */}
+    <article className="bg-slate-900/80 dark:bg-slate-900/90 rounded-3xl border border-slate-800/80 hover:border-slate-700/80 mb-6 shadow-xl shadow-slate-950/20 backdrop-blur-xl overflow-hidden transition-all duration-200">
+      {/* Post Header */}
       <div className="flex items-center justify-between p-4 px-5">
         <div className="flex items-center space-x-3">
-          <Avatar src={post.avatarUrl} username={post.username} size="md" />
+          <div className="relative">
+            <Avatar src={post.avatarUrl} username={post.username} size="md" />
+          </div>
           <div>
             <div className="flex items-center space-x-1.5">
-              <Link to={`/profile/${post.username}`} className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:underline flex items-center gap-1">
+              <Link to={`/profile/${post.username}`} className="font-bold text-sm text-slate-100 hover:text-cyan-400 transition-colors flex items-center gap-1">
                 <span>{post.displayName || post.username}</span>
                 {post.isVerified && (
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary-600 text-white text-[9px] font-black" title="Verified Creator">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-cyan-500 text-white text-[9px] font-black" title="Verified Creator">
                     ✓
                   </span>
                 )}
               </Link>
-              <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">{formattedTime}</span>
+              <span className="text-xs text-slate-500">•</span>
+              <span className="text-xs text-slate-400">{formattedTime}</span>
             </div>
-            <div className="flex items-center space-x-1 text-xs text-slate-400 dark:text-slate-500">
-              <Link to={`/profile/${post.username}`} className="hover:text-slate-600 dark:hover:text-slate-300">
+            <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+              <Link to={`/profile/${post.username}`} className="hover:text-slate-300">
                 @{post.username}
               </Link>
               <span>•</span>
-              {post.visibility === 'PUBLIC' && <Globe className="w-3 h-3" title="Public" />}
-              {post.visibility === 'FOLLOWERS' && <Users className="w-3 h-3" title="Followers Only" />}
+              {post.visibility === 'PUBLIC' && <Globe className="w-3 h-3 text-slate-400" title="Public" />}
+              {post.visibility === 'FOLLOWERS' && <Users className="w-3 h-3 text-slate-400" title="Followers Only" />}
               {post.visibility === 'CLOSE_FRIENDS' && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.2 rounded-full">
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   ★ Close Friends
                 </span>
               )}
-              {post.visibility === 'PRIVATE' && <Lock className="w-3 h-3" title="Private" />}
+              {post.visibility === 'PRIVATE' && <Lock className="w-3 h-3 text-slate-400" title="Private" />}
             </div>
           </div>
         </div>
@@ -165,17 +180,17 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-200 rounded-full hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden z-20 divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-20 divide-y divide-slate-800 text-slate-200">
               {isOwner && (
                 <button
                   onClick={() => { setShowMenu(false); setShowEditModal(true); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
                 >
                   Edit Post
                 </button>
@@ -192,29 +207,29 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
                       toast.error('Failed to update preference');
                     }
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer text-slate-300"
                 >
                   Not Interested
                 </button>
               )}
+              <button
+                onClick={() => { setShowMenu(false); setShowShareModal(true); }}
+                className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+              >
+                Share / Send DM
+              </button>
               {(isOwner || isAdmin) && (
                 <button
                   onClick={() => { setShowMenu(false); handleDelete(); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 cursor-pointer"
                 >
                   Delete Post
                 </button>
               )}
-              <button
-                onClick={() => { setShowMenu(false); handleShare(); }}
-                className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                Copy Link
-              </button>
               {!isOwner && (
                 <button
                   onClick={() => { setShowMenu(false); setShowReportModal(true); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 cursor-pointer"
                 >
                   Report Post
                 </button>
@@ -224,57 +239,62 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         </div>
       </div>
 
-      {/* Media Carousel / Single Media / Video */}
+      {/* Media Carousel / Double Tap Heart */}
       {post.media && post.media.length > 0 && (
-        <div className="relative bg-black flex items-center justify-center max-h-[600px] overflow-hidden select-none">
+        <div
+          className="relative bg-slate-950 flex items-center justify-center max-h-[620px] overflow-hidden select-none cursor-pointer"
+          onDoubleClick={handleDoubleTap}
+        >
           {post.media[currentMediaIndex].type === 'VIDEO' ? (
             <video
               src={post.media[currentMediaIndex].url.startsWith('http') ? post.media[currentMediaIndex].url : `http://localhost:8080${post.media[currentMediaIndex].url}`}
               controls
               playsInline
-              className="w-full max-h-[550px] object-contain"
+              className="w-full max-h-[580px] object-contain"
             />
           ) : (
             <img
               src={post.media[currentMediaIndex].url.startsWith('http') ? post.media[currentMediaIndex].url : `http://localhost:8080${post.media[currentMediaIndex].url}`}
               alt="Post content"
-              className="w-full max-h-[550px] object-contain cursor-pointer"
-              onDoubleClick={() => handleSelectReaction('LOVE')}
+              className="w-full max-h-[580px] object-contain"
             />
           )}
 
-          {/* Double tap like heart animation */}
-          {likeAnimation && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-ping">
-              <Heart className="w-24 h-24 text-rose-500 fill-rose-500 opacity-90 drop-shadow-lg" />
+          {/* Animated Neon Heart Pop */}
+          {showHeartPop && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 animate-scale-up">
+              <div className="relative">
+                <Heart className="w-28 h-28 text-rose-500 fill-rose-500 drop-shadow-[0_0_25px_rgba(244,63,94,0.9)] animate-bounce" />
+                <Sparkles className="w-8 h-8 text-amber-300 absolute -top-2 -right-2 animate-spin" />
+              </div>
             </div>
           )}
 
-          {/* Multi-image carousel navigation */}
+          {/* Carousel Arrows */}
           {post.media.length > 1 && (
             <>
               {currentMediaIndex > 0 && (
                 <button
-                  onClick={() => setCurrentMediaIndex(prev => prev - 1)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors backdrop-blur-sm"
+                  onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev - 1); }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white hover:bg-slate-900 transition-colors backdrop-blur-md border border-slate-800 shadow-lg cursor-pointer"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
               )}
               {currentMediaIndex < post.media.length - 1 && (
                 <button
-                  onClick={() => setCurrentMediaIndex(prev => prev + 1)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors backdrop-blur-sm"
+                  onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex(prev => prev + 1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-white hover:bg-slate-900 transition-colors backdrop-blur-md border border-slate-800 shadow-lg cursor-pointer"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               )}
               {/* Pagination Dots */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1.5">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1.5 bg-slate-950/60 px-2.5 py-1 rounded-full backdrop-blur-md border border-slate-800/80">
                 {post.media.map((_, i) => (
                   <span
                     key={i}
-                    className={`w-2 h-2 rounded-full transition-all ${i === currentMediaIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === currentMediaIndex ? 'bg-cyan-400 w-4 shadow-sm shadow-cyan-400' : 'bg-slate-600 w-1.5'}`}
                   />
                 ))}
               </div>
@@ -283,11 +303,10 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         </div>
       )}
 
-      {/* Actions Bar */}
+      {/* Actions Strip */}
       <div className="p-4 px-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {/* Reaction Picker with hover menu */}
             <ReactionPicker
               currentReaction={currentReaction}
               onSelectReaction={handleSelectReaction}
@@ -297,17 +316,17 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
 
             <button
               onClick={() => setShowComments(!showComments)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer"
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5 text-slate-400" />
               <span>Comment</span>
-              {commentsCount > 0 && <span className="text-xs">({commentsCount})</span>}
+              {commentsCount > 0 && <span className="text-xs text-slate-400">({commentsCount})</span>}
             </button>
 
             <button
-              onClick={handleShare}
-              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-              title="Share Link"
+              onClick={() => setShowShareModal(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
+              title="Share / Send"
             >
               <Share2 className="w-5 h-5" />
             </button>
@@ -315,27 +334,50 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
 
           <button
             onClick={handleSave}
-            className={`p-2 rounded-xl transition-colors cursor-pointer ${
-              isSaved ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            className={`p-2 rounded-xl transition-all cursor-pointer ${
+              isSaved ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
             }`}
             title="Bookmark Post"
           >
-            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-primary-600 stroke-primary-600' : ''}`} />
+            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-cyan-400 stroke-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' : ''}`} />
           </button>
         </div>
 
-        {/* Video Title if applicable */}
+        {/* Video Title */}
         {post.title && (
-          <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{post.title}</h3>
+          <h3 className="font-bold text-sm text-slate-100">{post.title}</h3>
         )}
 
-        {/* Caption */}
-        {post.caption && (
-          <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed break-words">
-            <Link to={`/profile/${post.username}`} className="font-bold text-slate-900 dark:text-slate-100 mr-2 hover:underline">
+        {/* Caption with collapsible '...more' */}
+        {captionText && (
+          <div className="text-sm text-slate-200 leading-relaxed break-words">
+            <Link to={`/profile/${post.username}`} className="font-bold text-white mr-2 hover:underline">
               {post.username}
             </Link>
-            {renderFormattedCaption(post.caption)}
+            {isLongCaption && !isCaptionExpanded ? (
+              <>
+                {renderFormattedCaption(captionText.slice(0, 95))}
+                <span>... </span>
+                <button
+                  onClick={() => setIsCaptionExpanded(true)}
+                  className="text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+                >
+                  more
+                </button>
+              </>
+            ) : (
+              <>
+                {renderFormattedCaption(captionText)}
+                {isLongCaption && (
+                  <button
+                    onClick={() => setIsCaptionExpanded(false)}
+                    className="ml-2 text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+                  >
+                    show less
+                  </button>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -343,7 +385,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         {commentsCount > 0 && !showComments && (
           <button
             onClick={() => setShowComments(true)}
-            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            className="text-xs font-semibold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
           >
             View all {commentsCount} comments
           </button>
@@ -351,7 +393,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
 
         {/* Expanded Comments Section */}
         {showComments && (
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-3 border-t border-slate-800 space-y-3">
             <CommentSection
               postId={post.id}
               onCommentAdded={() => setCommentsCount(c => c + 1)}
@@ -361,7 +403,14 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         )}
       </div>
 
-      {/* Modals */}
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        post={post}
+      />
+
+      {/* Edit Modal */}
       {showEditModal && (
         <EditPostModal
           isOpen={showEditModal}
@@ -371,6 +420,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         />
       )}
 
+      {/* Report Modal */}
       {showReportModal && (
         <ReportModal
           isOpen={showReportModal}

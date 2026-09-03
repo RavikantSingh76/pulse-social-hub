@@ -56,10 +56,11 @@ export const MessagesPage = () => {
   const loadConversations = async () => {
     try {
       const res = await messageService.getConversations();
-      if (res.data?.success && res.data.data) {
-        setConversations(res.data.data);
-        if (res.data.data.length > 0 && !activeConv) {
-          selectConversation(res.data.data[0]);
+      const list = res.data?.data || res.data || (res.success ? res.data : []);
+      if (Array.isArray(list)) {
+        setConversations(list);
+        if (list.length > 0 && !activeConv) {
+          selectConversation(list[0]);
         }
       }
     } catch (err) {
@@ -75,8 +76,9 @@ export const MessagesPage = () => {
     setShowChatSearch(false);
     try {
       const res = await messageService.getMessages(conv.id);
-      if (res.data?.success && res.data.data) {
-        setMessages(res.data.data);
+      const list = res.data?.data || res.data || (res.success ? res.data : []);
+      if (Array.isArray(list)) {
+        setMessages(list);
       }
     } catch (err) {
       toast.error('Failed to load messages');

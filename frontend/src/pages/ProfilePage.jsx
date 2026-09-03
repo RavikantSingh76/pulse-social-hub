@@ -52,8 +52,9 @@ export const ProfilePage = () => {
     setLoading(true);
     try {
       const res = await userService.getProfile(username);
-      if (res.data?.success && res.data.data) {
-        setProfile(res.data.data);
+      const data = res.data?.data || res.data || (res.success ? res.data : null);
+      if (data) {
+        setProfile(data);
       }
     } catch (err) {
       toast.error('User not found');
@@ -66,8 +67,9 @@ export const ProfilePage = () => {
     setLoadingPosts(true);
     try {
       const res = await postService.getUserPosts(username, activeTab, 1, 20);
-      if (res.data?.success && res.data.data) {
-        setPosts(res.data.data.posts || []);
+      const data = res.data?.data || res.data || (res.success ? res.data : null);
+      if (data) {
+        setPosts(data.posts || data || []);
       }
     } catch (err) {
       console.error(err);
