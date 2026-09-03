@@ -55,8 +55,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         User ravikant = seedAdminRavikant();
-        List<User> indianUsers = seed100IndianUsers();
-        seedFollowersAndConversationsForRavikant(ravikant, indianUsers);
+        List<User> proUsers = seed200ProfessionalUsers();
+        seedFollowersAndConversationsForRavikant(ravikant, proUsers);
     }
 
     private User seedAdminRavikant() {
@@ -97,14 +97,14 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
     }
 
-    private List<User> seed100IndianUsers() {
+    private List<User> seed200ProfessionalUsers() {
         List<User> existingUsers = userRepository.findAll();
-        if (existingUsers.size() >= 100) {
-            System.out.println("[DatabaseSeeder] Indian users already seeded (" + existingUsers.size() + " users in DB).");
+        if (existingUsers.size() >= 200) {
+            System.out.println("[DatabaseSeeder] 200+ Professionals already seeded (" + existingUsers.size() + " users in DB).");
             return existingUsers;
         }
 
-        System.out.println("⏳ [DatabaseSeeder] Seeding 100 Indian Professionals & Content...");
+        System.out.println("⏳ [DatabaseSeeder] Seeding 200 High-Caliber Tech Professionals & Content...");
 
         String defaultUserPwd = passwordEncoder.encode("User@123");
 
@@ -135,36 +135,37 @@ public class DatabaseSeeder implements CommandLineRunner {
         };
 
         String[] techBios = {
-            "🚀 Senior Software Engineer @ Bengaluru | Java, Spring Boot & Distributed Systems | Coffee & Code ☕",
-            "🎨 Lead Product Designer | Crafting intuitive design systems & micro-interactions #UIUX",
-            "🤖 AI & Deep Learning Researcher | Exploring LLMs, RAG & Transformer Architectures 🧠",
-            "📱 Principal Mobile Architect (Flutter & React Native) | Building apps for millions of users",
-            "☁️ Cloud Infrastructure Lead | AWS Certified Solutions Architect | Kubernetes & Terraform",
-            "📸 Travel & Culture Photographer | Documenting the heritage and vibrance of Incredible India 🇮🇳",
-            "💡 Founder & Angel Investor | Scaling B2B SaaS platforms | Tech Enthusiast",
-            "📊 Senior Data Scientist | Transforming petabytes of data into actionable insights 📈",
-            "⚡ Frontend Engineer | React, Vite, Tailwind CSS & Web Performance Specialist #WebDev",
-            "🎯 Product Growth Strategist | Community Builder | Sharing daily productivity insights"
+            "🚀 Staff Software Engineer @ Google | Distributed Systems & Java 17 | Ex-Microsoft ☕",
+            "🎨 Principal Product Designer @ Razorpay | Crafting fintech design systems & micro-interactions #UIUX",
+            "🤖 Lead AI Research Scientist @ Bengaluru AI Lab | Exploring Large Language Models & Diffusion 🧠",
+            "📱 Principal Mobile Architect @ Swiggy | Building React Native & Flutter apps at hyper-scale",
+            "☁️ Cloud Infrastructure Director | AWS & GCP Certified Architect | Kubernetes, Terraform & Istio",
+            "📸 Travel & Culture Filmmaker | Documenting the architectural heritage of Incredible India 🇮🇳",
+            "💡 Founder & Managing Partner @ Pulse Ventures | Backing early-stage tech startups",
+            "📊 VP of Data Engineering @ CRED | Scaling real-time stream pipelines & Kafka clusters 📈",
+            "⚡ Senior Frontend Architect | Vite, React 18, Web Performance & Micro-Frontends #WebDev",
+            "🎯 Chief Product Officer | Scaling consumer platforms from 0 to 10M MAU | Tech Speaker"
         };
 
         String[] cities = {
             "Bengaluru, Karnataka", "New Delhi, Delhi", "Mumbai, Maharashtra",
             "Hyderabad, Telangana", "Pune, Maharashtra", "Chennai, Tamil Nadu",
             "Gurugram, Haryana", "Kolkata, West Bengal", "Noida, Uttar Pradesh",
-            "Ahmedabad, Gujarat", "Jaipur, Rajasthan", "Chandigarh, Punjab"
+            "Ahmedabad, Gujarat", "Jaipur, Rajasthan", "Chandigarh, Punjab",
+            "San Francisco, USA", "London, UK", "Singapore"
         };
 
         String[] samplePostCaptions = {
-            "Just deployed our latest high-concurrency microservices pipeline! Reduced API response times to under 15ms. 🚀 #tech #java #springboot #backend",
-            "Golden hour at Bengaluru tech corridor! The city never stops innovating. 🌇 #bengaluru #india #technology",
-            "System design tip: Never underestimate the power of idempotency and asynchronous event queues in distributed architectures. 💻 #engineering #architecture",
-            "Weekend hackathon showcase! So thrilled to mentor young college developers building generative AI applications. ⚡ #startup #community #hackathon",
-            "Clean workspace, dark mode UI, and continuous integration. Ready for an impactful week ahead! ☕ #productivity #developer",
-            "Exploring real-time WebSocket communication and WebRTC signaling protocols. The future of collaboration is interactive! 🤖 #websockets #realtime #innovation",
-            "Design philosophy: Great software is invisible. It anticipates user needs and removes friction effortlessly. ✨ #design #uiux #product",
-            "Attending the national technology conference in Delhi NCR. Inspiring discussions on India's digital transformation. 🇮🇳 #digitalindia #leadership",
-            "Optimized our database indexes and query cache hit rates today. Database CPU usage dropped by 40%! 📊 #database #performance",
-            "Sunday reflections on mentorship and engineering leadership. Continuous learning is the key. 📚 #growth #leadership #tech"
+            "Just launched our high-throughput distributed messaging architecture! 🚀 Sub-10ms p99 latency across all global regions. #tech #java #springboot #cloud #backend",
+            "Golden hour at Bengaluru Electronic City! The energy in India's silicon valley is truly electrifying. 🌇 #bengaluru #india #technology",
+            "System design tip: Designing for fault-tolerance means embracing failure as a first-class citizen. Circuit breakers and exponential backoffs save lives. 💻 #engineering #architecture",
+            "Incredible weekend mentoring 500+ college developers at the National Hackathon. The youth talent in India is phenomenal! ⚡ #startup #community #hackathon",
+            "Clean workspace, dark mode Pulse theme, hot espresso, and zero build warnings. What are you shipping this week? ☕ #developer #productivity",
+            "Exploring the synthesis of Web Audio API and real-time WebSockets. Instant acoustic feedback makes UIs feel remarkably alive! 🤖 #websockets #realtime #audio #innovation",
+            "Design philosophy: Great UX is empathetic and unobtrusive. It guides the user seamlessly without cognitive overload. ✨ #design #uiux #product",
+            "Keynote at Delhi Tech Leaders Forum. India's digital public infrastructure (UPI, ONDC, AI) is setting the global gold standard! 🇮🇳 #digitalindia #leadership",
+            "Optimized our database indexes and query cache hit rates today. Database CPU utilization decreased by 45%! 📊 #database #performance #sql",
+            "Leadership reflection: The best engineering managers don't manage code—they empower their teams to build fearlessly. 📚 #growth #leadership #tech"
         };
 
         String[] sampleImages = {
@@ -180,11 +181,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         List<User> createdUsers = new ArrayList<>();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 200; i++) {
             String firstName = firstNames[i % firstNames.length];
-            String lastName = lastNames[i % lastNames.length];
-            String username = (firstName + "." + lastName + (i + 1)).toLowerCase();
-            String email = (firstName + "." + lastName + (i + 1) + "@pulse.in").toLowerCase();
+            String lastName = lastNames[(i + (i / firstNames.length)) % lastNames.length];
+            String suffix = (i >= 100) ? String.valueOf(i + 1) : String.valueOf(i + 1);
+            String username = (firstName + "." + lastName + suffix).toLowerCase();
+            String email = (firstName + "." + lastName + suffix + "@pulse.in").toLowerCase();
 
             if (userRepository.existsByEmailIgnoreCase(email) || userRepository.existsByUsernameIgnoreCase(username)) {
                 continue;
@@ -194,7 +196,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             String bio = techBios[i % techBios.length];
             String city = cities[i % cities.length];
             String avatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=" + username;
-            boolean isVerified = (i % 6 == 0); // Verified creator badge
+            boolean isVerified = (i % 5 == 0); // Verified badge
 
             User user = User.builder()
                     .username(username)
@@ -213,7 +215,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             User savedUser = userRepository.save(user);
             createdUsers.add(savedUser);
 
-            // Post creation
+            // Post creation for every 2nd professional
             if (i % 2 == 0) {
                 String caption = samplePostCaptions[i % samplePostCaptions.length];
                 Post post = Post.builder()
@@ -221,7 +223,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .caption(caption)
                         .visibility(Post.Visibility.PUBLIC)
                         .postType(Post.PostType.POST)
-                        .viewCount((long)(200 + (i * 15)))
+                        .viewCount((long)(250 + (i * 20)))
                         .build();
 
                 Post savedPost = postRepository.save(post);
@@ -235,7 +237,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build());
             }
 
-            // Stories
+            // Stories for verified creators
             if (isVerified) {
                 storyRepository.save(Story.builder()
                         .user(savedUser)
@@ -248,7 +250,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             }
         }
 
-        System.out.println("✅ [DatabaseSeeder] Successfully seeded 100 Indian Professionals!");
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded 200 Real Tech Professionals!");
         return userRepository.findAll();
     }
 
@@ -268,7 +270,9 @@ public class DatabaseSeeder implements CommandLineRunner {
             "Hi Ravikant, saw your GitHub profile @RavikantSingh76. Excellent open-source contributions! Keep building. 👏",
             "Hey! Would love to collaborate on a full-stack AI project with you. Let me know when you're free to chat.",
             "Greetings Ravikant! Loved your latest post on clean code & system performance. Cheers from Hyderabad! ☕",
-            "Hi Ravikant! Just checked out the 9:16 vertical Reels and Instagram-style Story viewer. Beautiful implementation!"
+            "Hi Ravikant! Just checked out the 9:16 vertical Reels and Instagram-style Story viewer with Web Audio sound effects. Beautiful implementation! 🎵",
+            "Hello Ravikant! Our engineering team at Google Bengaluru is exploring Pulse. Incredible full-stack execution! 🌟",
+            "Hey Chief! The double-tap heart pop and audio synthesizer feel so satisfying. Great attention to micro-interactions."
         };
 
         String[] adminReplies = {
@@ -276,15 +280,15 @@ public class DatabaseSeeder implements CommandLineRunner {
             "Hi! Thanks for reaching out. I'd love to connect and discuss more about the summit.",
             "Welcome to Pulse! Feel free to share your thoughts, posts, and feedback anytime. 🌟",
             "Thank you! We put a lot of focus into clean architecture, low-latency APIs, and seamless real-time sockets.",
-            "Appreciate the support! Keep an eye out for upcoming creator studio features and new updates."
+            "Appreciate the support! Keep an eye out for upcoming creator studio features and audio visualizer updates."
         };
 
         for (int i = 0; i < allUsers.size(); i++) {
             User user = allUsers.get(i);
             if (user.getId().equals(ravikant.getId())) continue;
 
-            // 1. Make 70+ users follow Ravikant Singh
-            if (i < 75 && followRepository.findByFollowerAndFollowing(user, ravikant).isEmpty()) {
+            // 1. Make 130+ users follow Ravikant Singh
+            if (i < 135 && followRepository.findByFollowerAndFollowing(user, ravikant).isEmpty()) {
                 followRepository.save(Follow.builder()
                         .follower(user)
                         .following(ravikant)
@@ -300,12 +304,12 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .entityId(user.getId())
                         .entityType("USER")
                         .message("started following you.")
-                        .isRead(i > 3)
+                        .isRead(i > 5)
                         .build());
             }
 
-            // 2. Make Ravikant follow top 18 creators back (mutual following)
-            if (i < 18 && followRepository.findByFollowerAndFollowing(ravikant, user).isEmpty()) {
+            // 2. Make Ravikant follow top 32 creators back (mutual following)
+            if (i < 32 && followRepository.findByFollowerAndFollowing(ravikant, user).isEmpty()) {
                 followRepository.save(Follow.builder()
                         .follower(ravikant)
                         .following(user)
@@ -314,7 +318,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             }
 
             // 3. Interconnect other users for realistic network
-            if (i > 0 && i < 60) {
+            if (i > 0 && i < 120) {
                 User other = allUsers.get((i * 3 + 1) % allUsers.size());
                 if (!other.getId().equals(user.getId()) && followRepository.findByFollowerAndFollowing(user, other).isEmpty()) {
                     followRepository.save(Follow.builder()
@@ -325,8 +329,8 @@ public class DatabaseSeeder implements CommandLineRunner {
                 }
             }
 
-            // 4. Create Direct Messages with Ravikant Singh (first 12 users)
-            if (i < 12) {
+            // 4. Create Direct Messages with Ravikant Singh (first 20 users)
+            if (i < 20) {
                 List<Conversation> existingConvs = conversationRepository.findUserConversations(ravikant.getId());
                 boolean exists = false;
                 for (Conversation c : existingConvs) {
@@ -357,11 +361,11 @@ public class DatabaseSeeder implements CommandLineRunner {
                             .conversation(conv)
                             .sender(user)
                             .messageText(msgText)
-                            .isRead(i > 2)
+                            .isRead(i > 3)
                             .build());
 
-                    // Add reply from Ravikant for top 6 chats
-                    if (i < 6) {
+                    // Add reply from Ravikant for top 10 chats
+                    if (i < 10) {
                         String reply = adminReplies[i % adminReplies.length];
                         messageRepository.save(Message.builder()
                                 .conversation(conv)

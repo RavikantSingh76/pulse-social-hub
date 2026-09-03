@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { X, ChevronLeft, ChevronRight, Eye, Trash2, Send, Heart, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { soundFx } from '../../utils/audioEffects';
 
 export const StoryViewerModal = ({ stories, initialIndex = 0, onClose }) => {
   const { user } = useAuth();
@@ -50,6 +51,7 @@ export const StoryViewerModal = ({ stories, initialIndex = 0, onClose }) => {
   }, [currentIndex, isPaused]);
 
   const handleNext = () => {
+    soundFx.playSwipeTick();
     if (currentIndex < stories.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setProgress(0);
@@ -59,6 +61,7 @@ export const StoryViewerModal = ({ stories, initialIndex = 0, onClose }) => {
   };
 
   const handlePrev = () => {
+    soundFx.playSwipeTick();
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
       setProgress(0);

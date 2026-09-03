@@ -18,6 +18,7 @@ import ReactionPicker from '../components/common/ReactionPicker';
 import { CommentSection } from '../components/comment/CommentSection';
 import { ShareModal } from '../components/post/ShareModal';
 import { useAuth } from '../context/AuthContext';
+import { soundFx, REELS_AUDIO_TRACKS } from '../utils/audioEffects';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -31,6 +32,7 @@ export default function ReelsPage() {
   const [followingMap, setFollowingMap] = useState({});
   const [heartPopMap, setHeartPopMap] = useState({});
   const [page, setPage] = useState(1);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     fetchReels();
@@ -39,7 +41,7 @@ export default function ReelsPage() {
   const fetchReels = async () => {
     try {
       setLoading(true);
-      const res = await postService.getReels(page, 10);
+      const res = await postService.getReels(page, 12);
       const data = res.data?.data || res.data;
       if (data) {
         const fetched = data.reels || data || [];
@@ -52,8 +54,37 @@ export default function ReelsPage() {
     }
   };
 
+  const toggleSound = (reelIdx = 0) => {
+    const nextMuted = !muted;
+    setMuted(nextMuted);
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.loop = true;
+    }
+
+    if (!nextMuted) {
+      const track = REELS_AUDIO_TRACKS[reelIdx % REELS_AUDIO_TRACKS.length];
+      audioRef.current.src = track.audioUrl;
+      audioRef.current.play().catch(() => {});
+      toast.success(`Playing: ${track.title} 🎵`);
+    } else {
+      audioRef.current.pause();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const handleReaction = async (reelId, reactionType = 'LOVE') => {
     try {
+      soundFx.playReactionBubble();
       const res = await postService.toggleReaction(reelId, reactionType);
       const data = res.data?.data || res.data;
       if (data) {
@@ -70,6 +101,7 @@ export default function ReelsPage() {
           )
         );
         if (data.is_liked) {
+          soundFx.playLikePop();
           triggerHeartPop(reelId);
         }
       }
@@ -79,6 +111,7 @@ export default function ReelsPage() {
   };
 
   const triggerHeartPop = (reelId) => {
+    soundFx.playLikePop();
     setHeartPopMap(prev => ({ ...prev, [reelId]: true }));
     setTimeout(() => {
       setHeartPopMap(prev => ({ ...prev, [reelId]: false }));
@@ -114,7 +147,7 @@ export default function ReelsPage() {
     return (
       <div className="flex flex-col justify-center items-center h-[calc(100vh-5rem)] space-y-3">
         <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Reels...</p>
+        <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading Reels with Sound...</p>
       </div>
     );
   }
@@ -127,15 +160,16 @@ export default function ReelsPage() {
             <Play className="w-8 h-8 text-cyan-400" />
           </div>
           <p className="text-base font-bold text-slate-200">No Reels Available</p>
-          <p className="text-xs text-slate-500 mt-1">Be the first to share a video reel on Pulse!</p>
+          <p className="text-xs text-slate-500 mt-1">Be the first to share a video reel with audio on Pulse!</p>
         </div>
       ) : (
-        reels.map((reel) => {
+        reels.map((reel, index) => {
           const videoUrl = reel.media && reel.media.length > 0 ? reel.media[0].url : '';
           const isLiked = reel.isLiked;
           const isSaved = reel.isSaved;
           const isFollowed = followingMap[reel.userId];
           const isOwner = user && user.id === reel.userId;
+          const track = REELS_AUDIO_TRACKS[index % REELS_AUDIO_TRACKS.length];
 
           return (
             <div
@@ -151,13 +185,14 @@ export default function ReelsPage() {
                   loop
                   muted={muted}
                   playsInline
-                  onClick={() => setMuted(!muted)}
+                  onClick={() => toggleSound(index)}
                   onDoubleClick={() => handleReaction(reel.id, 'LOVE')}
                 />
               ) : (
                 <div
                   className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-slate-950 via-indigo-950 to-slate-900 text-white p-8 text-center cursor-pointer"
                   onDoubleClick={() => handleReaction(reel.id, 'LOVE')}
+                  onClick={() => toggleSound(index)}
                 >
                   <Sparkles className="w-10 h-10 text-cyan-400 mb-3 animate-pulse" />
                   <p className="font-extrabold text-lg leading-relaxed">{reel.caption}</p>
@@ -177,11 +212,15 @@ export default function ReelsPage() {
               {/* Top Controls Overlay */}
               <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
                 <button
-                  onClick={() => setMuted(!muted)}
-                  className="p-2.5 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-black/80 transition-colors border border-white/10 cursor-pointer shadow-lg"
-                  title={muted ? 'Unmute' : 'Mute'}
+                  onClick={() => toggleSound(index)}
+                  className={`p-2.5 rounded-full backdrop-blur-md transition-all border cursor-pointer shadow-lg ${
+                    !muted
+                      ? 'bg-cyan-500/20 text-cyan-400 border-cyan-400/40 shadow-cyan-500/30'
+                      : 'bg-black/60 text-white border-white/10 hover:bg-black/80'
+                  }`}
+                  title={muted ? 'Click to play Sound' : 'Mute'}
                 >
-                  {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+                  {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-cyan-400 animate-pulse" />}
                 </button>
               </div>
 
@@ -247,15 +286,24 @@ export default function ReelsPage() {
                   </span>
                 </button>
 
-                {/* Animated Rotating Vinyl Disc */}
-                <div className="pt-2">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-900 via-indigo-900 to-cyan-600 p-0.5 animate-spin-slow border border-white/30 shadow-lg flex items-center justify-center">
+                {/* Animated Rotating Vinyl Disc with Equalizer Bars */}
+                <div className="pt-2 flex flex-col items-center">
+                  <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-slate-900 via-indigo-900 to-cyan-600 p-0.5 border border-white/30 shadow-lg flex items-center justify-center ${!muted ? 'animate-spin-slow' : ''}`}>
                     <div className="w-3 h-3 rounded-full bg-slate-950 border border-white/40" />
                   </div>
+
+                  {/* Equalizer Visualizer */}
+                  {!muted && (
+                    <div className="flex items-end space-x-0.5 h-3 mt-1.5">
+                      <span className="w-0.5 bg-cyan-400 rounded-full animate-bounce h-2" />
+                      <span className="w-0.5 bg-pink-400 rounded-full animate-bounce h-3 delay-75" />
+                      <span className="w-0.5 bg-cyan-400 rounded-full animate-bounce h-1.5 delay-150" />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Bottom Creator Details & Audio Strip */}
+              {/* Bottom Creator Details & Audio Track */}
               <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white z-20 space-y-2">
                 {/* Creator Header */}
                 <div className="flex items-center gap-2.5">
@@ -296,11 +344,14 @@ export default function ReelsPage() {
                   </p>
                 )}
 
-                {/* Audio Track Info */}
-                <div className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/40 px-2.5 py-1 rounded-full w-fit backdrop-blur-md border border-white/10">
-                  <Music2 className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-                  <span className="truncate max-w-[200px]">Original Audio • {reel.displayName || reel.username}</span>
-                </div>
+                {/* Audio Track Info with Click to Play */}
+                <button
+                  onClick={() => toggleSound(index)}
+                  className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/40 hover:bg-black/60 px-3 py-1 rounded-full w-fit backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
+                >
+                  <Music2 className={`w-3.5 h-3.5 text-cyan-400 ${!muted ? 'animate-pulse' : ''}`} />
+                  <span className="truncate max-w-[210px]">{track.title}</span>
+                </button>
               </div>
             </div>
           );

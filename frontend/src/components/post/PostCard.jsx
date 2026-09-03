@@ -24,6 +24,7 @@ import {
   Smile
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { soundFx } from '../../utils/audioEffects';
 
 export const PostCard = ({ post: initialPost, onDelete }) => {
   const { user, isAuthenticated } = useAuth();
@@ -53,6 +54,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
     }
 
     try {
+      soundFx.playReactionBubble();
       const res = await postService.toggleReaction(post.id, reactionType);
       const data = res.data?.data || res.data;
       if (data) {
@@ -60,6 +62,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
         setCurrentReaction(data.current_reaction);
         setLikesCount(data.likes_count);
         if (data.is_liked) {
+          soundFx.playLikePop();
           setShowHeartPop(true);
           setTimeout(() => setShowHeartPop(false), 900);
         }
@@ -71,6 +74,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
 
   // Double tap to like
   const handleDoubleTap = () => {
+    soundFx.playLikePop();
     handleSelectReaction('LOVE');
     setShowHeartPop(true);
     setTimeout(() => setShowHeartPop(false), 900);
