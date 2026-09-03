@@ -173,10 +173,11 @@ npm run dev
 
 | Role | Email / Identifier | Password | Access / Features |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@social.com` / `admin` | `Admin@123` | Admin Panel (`/admin`), Moderation, Verification Toggle, Warnings |
-| **Verified Creator** | `alex@social.com` / `alex` | `User@123` | Creator Studio (`/creator/studio`), Stories, Reels, Close Friends |
-| **User (Sarah)** | `sarah@social.com` / `sarah` | `User@123` | Feeds, Direct Messages, Groups, Reactions, Saved Bookmarks |
-| **User (David)** | `david@social.com` / `david` | `User@123` | Videos, Comments, Hashtag Following, Profile Highlights |
+| **👑 Chief Administrator (Ravikant Singh)** | `ravikantsinghravi7@gmail.com` *(or `ravikant`)* | `Admin@123` | Full Admin Center (`/admin`), Verification Badges, User Moderation, Warnings, Content Control |
+| **👑 Administrator** | `admin@social.com` *(or `admin`)* | `Admin@123` | Admin Panel (`/admin`), Moderation, Verification Toggle |
+| **🇮🇳 Indian Creator (Aarav Sharma)** | `aarav.sharma1@pulse.in` | `User@123` | Verified Creator, Reels, Stories, Creator Studio (`/creator/studio`) |
+| **🇮🇳 Indian Creator (Ananya Verma)** | `ananya.verma2@pulse.in` | `User@123` | Creator Studio, Feeds, Direct Messages, Groups |
+| **🇮🇳 100+ Indian Users** | `[firstname].[lastname][1..100]@pulse.in` | `User@123` | Active Indian Community across Bengaluru, Delhi, Mumbai, Hyderabad, Pune, etc. |
 
 ---
 

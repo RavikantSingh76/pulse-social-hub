@@ -105,35 +105,27 @@ export const LoginPage = () => {
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('admin@social.com', 'Admin@123')}
-                className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold transition-colors"
+                onClick={() => handleQuickLogin('ravikantsinghravi7@gmail.com', 'Admin@123')}
+                className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold transition-colors col-span-2 shadow-sm"
               >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Admin Login</span>
+                <Shield className="w-4 h-4" />
+                <span>👑 Ravikant Singh (Chief Admin)</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickLogin('alex@social.com', 'User@123')}
+                onClick={() => handleQuickLogin('aarav.sharma1@pulse.in', 'User@123')}
                 className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold transition-colors"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Alex Morgan</span>
+                <span>Aarav Sharma 🇮🇳</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickLogin('sarah@social.com', 'User@123')}
+                onClick={() => handleQuickLogin('ananya.verma2@pulse.in', 'User@123')}
                 className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold transition-colors"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Sarah Connor</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('david@social.com', 'User@123')}
-                className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-bold transition-colors"
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>David Chen</span>
+                <span>Ananya Verma 🇮🇳</span>
               </button>
             </div>
           </div>
