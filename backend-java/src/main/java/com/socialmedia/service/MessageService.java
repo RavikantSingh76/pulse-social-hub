@@ -96,7 +96,6 @@ public class MessageService {
     @Transactional
     public MessageResponse sendMessageWithMedia(Long senderId, Long conversationId, MultipartFile file, String text, Long replyToId) {
         String mediaUrl = saveFile(file);
-        String mediaType = file.getContentType() != null && file.getContentType().startsWith("video") ? "VIDEO" : "IMAGE";
 
         SendMessageRequest req = SendMessageRequest.builder()
                 .conversationId(conversationId)
