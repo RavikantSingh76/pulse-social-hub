@@ -57,6 +57,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         User ravikant = seedAdminRavikant();
         List<User> proUsers = seed200ProfessionalUsers();
         seedFollowersAndConversationsForRavikant(ravikant, proUsers);
+        seedReels(ravikant, proUsers);
     }
 
     private User seedAdminRavikant() {
@@ -381,5 +382,99 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         System.out.println("✅ [DatabaseSeeder] Seeded " + followersAdded + " followers for Ravikant Singh and " + conversationsAdded + " direct conversations!");
+    }
+
+    private void seedReels(User ravikant, List<User> users) {
+        long existingReels = postRepository.countByPostType(Post.PostType.VIDEO);
+        if (existingReels >= 20) {
+            System.out.println("[DatabaseSeeder] Reels already seeded (" + existingReels + " video reels in DB).");
+            return;
+        }
+
+        System.out.println("⏳ [DatabaseSeeder] Seeding 25+ High-Quality Vertical Video Reels with Sound...");
+
+        String[] reelVideoUrls = {
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-night-sky-with-stars-and-a-full-moon-41617-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-waves-crashing-on-a-sandy-beach-42407-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-hands-typing-on-a-laptop-keyboard-41589-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-drone-view-of-a-winding-mountain-road-42354-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-vertical-neon-lights-in-a-cyberpunk-city-street-42512-large.mp4"
+        };
+
+        String[] reelCaptions = {
+            "Late night coding session at Bengaluru Tech Park! Building real-time architectures with Spring Boot 3 & React 🚀 #reels #tech #bengaluru #coding",
+            "Neon Cyberpunk vibes in the city that never sleeps! 🌃 #nightcity #aesthetic #reels #vibes",
+            "The sunset view from Marine Drive, Mumbai! Truly majestic ✨ #mumbai #india #travel #reels",
+            "Exploring Transformer Attention mechanisms and LLM token generation in real-time 🧠 #ai #machinelearning #reels",
+            "Mechanical keyboard sound ASMR + late night debugging flow ☕ #devlife #coding #asmr #reels",
+            "Financial district architecture in Gurugram Cyberhub! 🏢 #cybercity #india #reels",
+            "Waves crashing against the shore at sunset. Pure tranquility 🌊 #nature #reels #peace",
+            "Shipping features at lightning speed with Vite and Tailwind CSS! ⚡ #webdev #react #reels",
+            "Winding roads of Western Ghats! Incredible scenic drive 🛣️ #travel #india #wanderlust #reels",
+            "Cyberpunk city street in full neon bloom! 🌌 #futuristic #neon #citylights #reels",
+            "Designing frictionless user experiences for 10M+ users. Less is truly more. ✨ #uiux #design #product #reels",
+            "Deploying high-concurrency microservices with sub-10ms response times! ⚡ #backend #java #cloud #reels"
+        };
+
+        int reelsCreated = 0;
+
+        // 1. Create 3 Reels for Chief Admin Ravikant Singh
+        if (ravikant != null) {
+            for (int r = 0; r < 3; r++) {
+                Post reel = Post.builder()
+                        .user(ravikant)
+                        .caption(reelCaptions[r % reelCaptions.length])
+                        .visibility(Post.Visibility.PUBLIC)
+                        .postType(Post.PostType.VIDEO)
+                        .viewCount((long)(12000 + (r * 3500)))
+                        .build();
+
+                Post savedReel = postRepository.save(reel);
+
+                postMediaRepository.save(PostMedia.builder()
+                        .post(savedReel)
+                        .mediaUrl(reelVideoUrls[r % reelVideoUrls.length])
+                        .mediaType(PostMedia.MediaType.VIDEO)
+                        .orderIndex(0)
+                        .build());
+
+                reelsCreated++;
+            }
+        }
+
+        // 2. Create 22 Reels for top creators
+        for (int i = 0; i < 22 && i < users.size(); i++) {
+            User creator = users.get(i);
+            if (ravikant != null && creator.getId().equals(ravikant.getId())) continue;
+
+            String caption = reelCaptions[(i + 3) % reelCaptions.length];
+            String videoUrl = reelVideoUrls[(i + 3) % reelVideoUrls.length];
+
+            Post reel = Post.builder()
+                    .user(creator)
+                    .caption(caption)
+                    .visibility(Post.Visibility.PUBLIC)
+                    .postType(Post.PostType.VIDEO)
+                    .viewCount((long)(4500 + (i * 850)))
+                    .build();
+
+            Post savedReel = postRepository.save(reel);
+
+            postMediaRepository.save(PostMedia.builder()
+                    .post(savedReel)
+                    .mediaUrl(videoUrl)
+                    .mediaType(PostMedia.MediaType.VIDEO)
+                    .orderIndex(0)
+                    .build());
+
+            reelsCreated++;
+        }
+
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded " + reelsCreated + " vertical video reels!");
     }
 }

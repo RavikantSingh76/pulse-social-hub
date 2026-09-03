@@ -54,7 +54,7 @@ export const userService = {
 export const postService = {
   getFeed: (type = 'FOR_YOU', page = 1, limit = 10) => api.get(`/posts/feed?type=${type}&page=${page}&limit=${limit}`),
   getExplore: (page = 1, limit = 20) => api.get(`/posts/explore?page=${page}&limit=${limit}`),
-  getReels: (page = 1, limit = 10) => api.get(`/reels?page=${page}&limit=${limit}`),
+  getReels: (page = 1, limit = 12) => api.get(`/posts/reels?page=${page}&limit=${limit}`),
   getHashtagPosts: (tag, page = 1, limit = 20) => api.get(`/posts/hashtag/${tag}?page=${page}&limit=${limit}`),
   getUserPosts: (username, tab = 'posts', page = 1, limit = 20) => api.get(`/posts/user/${username}?tab=${tab}&page=${page}&limit=${limit}`),
   getPost: (id) => api.get(`/posts/${id}`),

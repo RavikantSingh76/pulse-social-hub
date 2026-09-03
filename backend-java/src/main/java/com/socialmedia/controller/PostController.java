@@ -61,6 +61,17 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success(Map.of("posts", posts, "page", page, "limit", limit, "type", type)));
     }
 
+    @GetMapping(path = {"/reels", "/feed/reels"})
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getReels(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "12") int limit) {
+
+        Long currentUserId = userPrincipal != null ? userPrincipal.getId() : null;
+        List<PostResponse> reels = postService.getFeedByType(currentUserId, "REELS", page, limit);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("reels", reels, "page", page, "limit", limit)));
+    }
+
     @GetMapping("/explore")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getExplore(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
