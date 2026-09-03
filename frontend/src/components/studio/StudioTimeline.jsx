@@ -263,18 +263,23 @@ export default function StudioTimeline({
                       : 'bg-amber-950/30 border-amber-500/40 text-amber-300 hover:border-amber-400'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <Music className="w-3 h-3 text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Music className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span className="truncate">{backgroundMusic.title} • {backgroundMusic.artist}</span>
+                    {backgroundMusic.genre && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 uppercase shrink-0">
+                        {backgroundMusic.genre}
+                      </span>
+                    )}
                   </div>
 
                   {/* Audio Waveform Graphic */}
-                  <div className="flex items-center space-x-0.5 opacity-60">
-                    {Array.from({ length: 24 }).map((_, i) => (
+                  <div className="flex items-center space-x-0.5 opacity-75 shrink-0">
+                    {Array.from({ length: 32 }).map((_, i) => (
                       <span
                         key={i}
                         className="w-0.5 bg-amber-400 rounded-full"
-                        style={{ height: `${(i % 5 + 2) * 3}px` }}
+                        style={{ height: `${((i * 7) % 18) + 4}px` }}
                       />
                     ))}
                   </div>

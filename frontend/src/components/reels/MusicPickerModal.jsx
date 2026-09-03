@@ -15,73 +15,16 @@ import {
   Trash2,
   Clock,
   Radio,
-  Disc
+  Disc,
+  Filter,
+  Flame,
+  Activity
 } from 'lucide-react';
+import { musicLibraryService, MUSIC_CATEGORIES, COMPREHENSIVE_MUSIC_LIBRARY } from '../../services/musicLibraryService';
 import { soundFx } from '../../utils/audioEffects';
 import toast from 'react-hot-toast';
 
-export const CURATED_MUSIC_LIBRARY = [
-  {
-    id: 'm1',
-    title: 'Neon Cyberpunk Lofi',
-    artist: 'Pulse Original Master',
-    genre: 'Cyberpunk / Lofi',
-    duration: 120, // 2:00
-    bpm: 90,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
-    coverUrl: 'https://images.pexels.com/photos/2603464/pexels-photo-2603464.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  {
-    id: 'm2',
-    title: 'Deep Focus Coding Flow',
-    artist: 'Aarav Sharma Beats',
-    genre: 'Ambient Tech',
-    duration: 145,
-    bpm: 85,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-hollidays-690.mp3',
-    coverUrl: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  {
-    id: 'm3',
-    title: 'Future Bass Rush',
-    artist: 'Neon Synthetics',
-    genre: 'Electronic / EDM',
-    duration: 98,
-    bpm: 128,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3',
-    coverUrl: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  {
-    id: 'm4',
-    title: 'Marine Drive Sunset',
-    artist: 'Acoustic Soul',
-    genre: 'Chill / Acoustic',
-    duration: 135,
-    bpm: 78,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3',
-    coverUrl: 'https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  {
-    id: 'm5',
-    title: 'Sub-Bass Impact Drop',
-    artist: 'Ravikant Studio FX',
-    genre: 'Cinematic Trailer',
-    duration: 65,
-    bpm: 110,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-raising-me-higher-34.mp3',
-    coverUrl: 'https://images.pexels.com/photos/4974914/pexels-photo-4974914.jpeg?auto=compress&cs=tinysrgb&w=300'
-  },
-  {
-    id: 'm6',
-    title: 'Bengaluru Tech Park Pulse',
-    artist: 'Urban Lofi Collective',
-    genre: 'Hip Hop Beat',
-    duration: 112,
-    bpm: 95,
-    audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-delightful-4.mp3',
-    coverUrl: 'https://images.pexels.com/photos/373912/pexels-photo-373912.jpeg?auto=compress&cs=tinysrgb&w=300'
-  }
-];
+export const CURATED_MUSIC_LIBRARY = COMPREHENSIVE_MUSIC_LIBRARY;
 
 export default function MusicPickerModal({
   isOpen,
@@ -90,11 +33,16 @@ export default function MusicPickerModal({
   onSelectMusic
 }) {
   const [activeTab, setActiveTab] = useState('library'); // 'library' | 'upload' | 'trim'
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentSelected, setCurrentSelected] = useState(selectedMusic || null);
   const [previewingId, setPreviewingId] = useState(null);
+
+  // Audio adjustments
   const [volume, setVolume] = useState(selectedMusic?.volume ?? 80);
   const [startTime, setStartTime] = useState(selectedMusic?.startTime ?? 0);
+  const [fadeIn, setFadeIn] = useState(selectedMusic?.fadeIn ?? true);
+  const [fadeOut, setFadeOut] = useState(selectedMusic?.fadeOut ?? true);
   const [autoDucking, setAutoDucking] = useState(selectedMusic?.autoDucking ?? true);
 
   const previewAudioRef = useRef(null);
@@ -105,11 +53,13 @@ export default function MusicPickerModal({
       setCurrentSelected(selectedMusic);
       setVolume(selectedMusic.volume ?? 80);
       setStartTime(selectedMusic.startTime ?? 0);
+      setFadeIn(selectedMusic.fadeIn ?? true);
+      setFadeOut(selectedMusic.fadeOut ?? true);
       setAutoDucking(selectedMusic.autoDucking ?? true);
     }
   }, [selectedMusic]);
 
-  // Clean up audio on close
+  // Clean up audio on modal close
   useEffect(() => {
     if (!isOpen) {
       if (previewAudioRef.current) {
@@ -146,6 +96,8 @@ export default function MusicPickerModal({
       ...song,
       volume,
       startTime,
+      fadeIn,
+      fadeOut,
       autoDucking
     };
     setCurrentSelected(updated);
@@ -166,20 +118,22 @@ export default function MusicPickerModal({
     const customSong = {
       id: `custom_${Date.now()}`,
       title: file.name.replace(/\.[^/.]+$/, ''),
-      artist: 'Your Device Audio',
-      genre: 'Custom Upload',
+      artist: 'Original Device Audio',
+      genre: 'Custom Audio',
       duration: 180,
       audioUrl: customUrl,
       isCustom: true,
       coverUrl: 'https://images.pexels.com/photos/1624496/pexels-photo-1624496.jpeg?auto=compress&cs=tinysrgb&w=300',
       volume,
       startTime: 0,
+      fadeIn: true,
+      fadeOut: true,
       autoDucking: true
     };
 
     setCurrentSelected(customSong);
     setActiveTab('trim');
-    toast.success('Custom audio uploaded! 🎧');
+    toast.success('Device audio uploaded! 🎧');
   };
 
   const handleRemoveMusic = () => {
@@ -200,6 +154,8 @@ export default function MusicPickerModal({
         ...currentSelected,
         volume,
         startTime,
+        fadeIn,
+        fadeOut,
         autoDucking
       });
     } else {
@@ -208,12 +164,11 @@ export default function MusicPickerModal({
     onClose();
   };
 
-  const filteredLibrary = CURATED_MUSIC_LIBRARY.filter(
-    s =>
-      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.genre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter songs by Category and Search Query
+  const filteredSongs = musicLibraryService.filterSongs({
+    category: selectedCategory,
+    query: searchQuery
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
@@ -224,16 +179,16 @@ export default function MusicPickerModal({
         onError={() => setPreviewingId(null)}
       />
 
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] text-white overflow-hidden">
+      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] text-white overflow-hidden">
         {/* Header Bar */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
               <Music className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base text-white">Select Music Track</h3>
-              <p className="text-[11px] text-slate-400">Add royalty-free music or upload from your device</p>
+              <h3 className="font-extrabold text-base text-white">Music & Soundtracks</h3>
+              <p className="text-[11px] text-slate-400">Hindi, Bhojpuri, Trending, Lofi & Devotional library</p>
             </div>
           </div>
 
@@ -245,23 +200,30 @@ export default function MusicPickerModal({
           </button>
         </div>
 
-        {/* Currently Selected Song Banner */}
+        {/* Currently Selected / Active Song Banner */}
         {currentSelected ? (
-          <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-indigo-950/60 to-slate-900 border border-cyan-500/30 flex items-center justify-between">
+          <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-indigo-950/70 to-slate-900 border border-cyan-500/40 flex items-center justify-between animate-fade-in shadow-md">
             <div className="flex items-center gap-3 min-w-0">
-              <img
-                src={currentSelected.coverUrl}
-                alt={currentSelected.title}
-                className="w-11 h-11 rounded-xl object-cover border border-cyan-400 shrink-0"
-              />
+              <div className="relative shrink-0">
+                <img
+                  src={currentSelected.coverUrl}
+                  alt={currentSelected.title}
+                  className="w-12 h-12 rounded-xl object-cover border border-cyan-400"
+                />
+                <span className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-cyan-500 text-slate-950 font-black text-[9px]">
+                  ✓
+                </span>
+              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-black text-white truncate">{currentSelected.title}</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-400 shrink-0">
-                    ACTIVE
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 uppercase tracking-wider shrink-0">
+                    Active
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">{currentSelected.artist}</p>
+                <p className="text-[11px] text-slate-400 truncate">
+                  {currentSelected.artist} • <span className="text-cyan-400 font-semibold">{currentSelected.genre}</span>
+                </p>
               </div>
             </div>
 
@@ -274,7 +236,7 @@ export default function MusicPickerModal({
                 {previewingId === currentSelected.id ? (
                   <Pause className="w-4 h-4 fill-slate-950" />
                 ) : (
-                  <Play className="w-4 h-4 fill-slate-950" />
+                  <Play className="w-4 h-4 fill-slate-950 ml-0.5" />
                 )}
               </button>
 
@@ -289,11 +251,11 @@ export default function MusicPickerModal({
           </div>
         ) : (
           <div className="mt-3 p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800 text-center text-xs text-slate-400">
-            No music track currently applied. Choose a song below or upload your own.
+            No music track currently applied. Choose from categories below or upload device audio.
           </div>
         )}
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation: Library vs Upload vs Trimming */}
         <div className="flex items-center p-1 bg-slate-950 rounded-2xl border border-slate-800 my-3">
           <button
             onClick={() => setActiveTab('library')}
@@ -303,7 +265,7 @@ export default function MusicPickerModal({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            🎵 Music Library
+            🎵 Music Categories
           </button>
 
           <button
@@ -314,7 +276,7 @@ export default function MusicPickerModal({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            📁 Upload Custom
+            📁 Device Audio
           </button>
 
           <button
@@ -326,7 +288,7 @@ export default function MusicPickerModal({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            ✂ Trim & Volume
+            ✂ Trim & Mixing
           </button>
         </div>
 
@@ -335,6 +297,29 @@ export default function MusicPickerModal({
           {/* 1. MUSIC LIBRARY TAB */}
           {activeTab === 'library' && (
             <div className="space-y-3">
+              {/* Category Badges Horizontal Filter Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {MUSIC_CATEGORIES.map((cat) => {
+                  const isCatSelected = selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        soundFx.playSwipeTick();
+                        setSelectedCategory(cat.id);
+                      }}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                        isCatSelected
+                          ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/20'
+                          : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Search Bar */}
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -342,72 +327,89 @@ export default function MusicPickerModal({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search music by title, artist, or genre..."
+                  placeholder="Search Hindi, Bhojpuri, Lofi, Devotional by name or artist..."
                   className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 outline-none focus:border-cyan-500"
                 />
               </div>
 
-              {/* Song List */}
+              {/* Songs List */}
               <div className="space-y-2">
-                {filteredLibrary.map((song) => {
-                  const isSelected = currentSelected?.id === song.id;
-                  const isPlaying = previewingId === song.id;
+                {filteredSongs.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs bg-slate-950/40 rounded-2xl border border-slate-800">
+                    No songs found matching "{searchQuery}". Try selecting another category!
+                  </div>
+                ) : (
+                  filteredSongs.map((song) => {
+                    const isSelected = currentSelected?.id === song.id;
+                    const isPlaying = previewingId === song.id;
 
-                  return (
-                    <div
-                      key={song.id}
-                      className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'bg-cyan-950/40 border-cyan-500/50 shadow-md shadow-cyan-500/10'
-                          : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="relative group shrink-0">
-                          <img
-                            src={song.coverUrl}
-                            alt={song.title}
-                            className="w-10 h-10 rounded-xl object-cover border border-slate-700"
-                          />
+                    return (
+                      <div
+                        key={song.id}
+                        className={`p-2.5 rounded-2xl border transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-cyan-950/40 border-cyan-500/60 shadow-md shadow-cyan-500/10'
+                            : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative group shrink-0">
+                            <img
+                              src={song.coverUrl}
+                              alt={song.title}
+                              className="w-11 h-11 rounded-xl object-cover border border-slate-700"
+                            />
+                            <button
+                              onClick={() => handleTogglePreview(song)}
+                              className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center text-white transition-opacity cursor-pointer"
+                            >
+                              {isPlaying ? (
+                                <Pause className="w-4 h-4 fill-white animate-pulse text-cyan-400" />
+                              ) : (
+                                <Play className="w-4 h-4 fill-white ml-0.5" />
+                              )}
+                            </button>
+                          </div>
+
+                          <div className="min-w-0">
+                            <h4 className="font-extrabold text-xs text-white truncate">{song.title}</h4>
+                            <p className="text-[10px] text-slate-400 truncate">
+                              {song.artist} • <span className="text-cyan-400 font-semibold">{song.genre}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Simulated mini waveform */}
+                          <div className="hidden sm:flex items-end space-x-0.5 h-3 opacity-60">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                              <span
+                                key={i}
+                                className={`w-0.5 rounded-full ${isPlaying ? 'bg-cyan-400 animate-bounce' : 'bg-slate-600'}`}
+                                style={{ height: `${(i % 3 + 1) * 4}px` }}
+                              />
+                            ))}
+                          </div>
+
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {Math.floor(song.duration / 60)}:{(song.duration % 60).toString().padStart(2, '0')}
+                          </span>
+
                           <button
-                            onClick={() => handleTogglePreview(song)}
-                            className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center text-white transition-opacity cursor-pointer"
+                            onClick={() => handleSelectSong(song)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                                : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                            }`}
                           >
-                            {isPlaying ? (
-                              <Pause className="w-4 h-4 fill-white animate-pulse text-cyan-400" />
-                            ) : (
-                              <Play className="w-4 h-4 fill-white" />
-                            )}
+                            {isSelected ? '✓ Added' : '+ Add'}
                           </button>
                         </div>
-
-                        <div className="min-w-0">
-                          <h4 className="font-extrabold text-xs text-white truncate">{song.title}</h4>
-                          <p className="text-[10px] text-slate-400 truncate">
-                            {song.artist} · <span className="text-cyan-400 font-semibold">{song.genre}</span>
-                          </p>
-                        </div>
                       </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          {Math.floor(song.duration / 60)}:{(song.duration % 60).toString().padStart(2, '0')}
-                        </span>
-
-                        <button
-                          onClick={() => handleSelectSong(song)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                              : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
-                          }`}
-                        >
-                          {isSelected ? '✓ Selected' : 'Use'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -420,9 +422,9 @@ export default function MusicPickerModal({
               </div>
 
               <div>
-                <h4 className="font-extrabold text-sm text-white">Upload Song from Device</h4>
+                <h4 className="font-extrabold text-sm text-white">Upload Custom Song / Original Audio</h4>
                 <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Choose any MP3, WAV, AAC, or M4A audio file from your local computer or phone.
+                  Upload MP3, WAV, AAC, or M4A audio files from your local storage to use as your reel track.
                 </p>
               </div>
 
@@ -443,7 +445,7 @@ export default function MusicPickerModal({
             </div>
           )}
 
-          {/* 3. TRIM & VOLUME MIXING TAB */}
+          {/* 3. TRIM & AUDIO MIXING TAB */}
           {activeTab === 'trim' && currentSelected && (
             <div className="space-y-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
               {/* Volume Slider */}
@@ -474,7 +476,7 @@ export default function MusicPickerModal({
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-300 flex items-center gap-1.5">
                     <Scissors className="w-4 h-4 text-cyan-400" />
-                    <span>Song Starting Point</span>
+                    <span>Starting Point (Offset)</span>
                   </span>
                   <span className="font-mono font-bold text-cyan-400">
                     {Math.floor(startTime / 60)}:{(startTime % 60).toString().padStart(2, '0')}
@@ -483,7 +485,7 @@ export default function MusicPickerModal({
                 <input
                   type="range"
                   min="0"
-                  max={Math.max(0, currentSelected.duration - 15)}
+                  max={Math.max(0, currentSelected.duration - 10)}
                   value={startTime}
                   onChange={(e) => {
                     const t = Number(e.target.value);
@@ -492,9 +494,29 @@ export default function MusicPickerModal({
                   }}
                   className="w-full accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
                 />
-                <p className="text-[10px] text-slate-500">
-                  Select the exact beat or chorus where your reel's background audio will begin.
-                </p>
+              </div>
+
+              {/* Fade In / Fade Out Envelope Switches */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                  <span className="text-xs font-bold text-white">Fade In (0.5s)</span>
+                  <input
+                    type="checkbox"
+                    checked={fadeIn}
+                    onChange={(e) => setFadeIn(e.target.checked)}
+                    className="w-4 h-4 rounded text-cyan-500 cursor-pointer accent-cyan-400"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                  <span className="text-xs font-bold text-white">Fade Out (0.5s)</span>
+                  <input
+                    type="checkbox"
+                    checked={fadeOut}
+                    onChange={(e) => setFadeOut(e.target.checked)}
+                    className="w-4 h-4 rounded text-cyan-500 cursor-pointer accent-cyan-400"
+                  />
+                </div>
               </div>
 
               {/* Auto Ducking Toggle */}
@@ -502,7 +524,7 @@ export default function MusicPickerModal({
                 <div className="space-y-0.5">
                   <p className="text-xs font-bold text-white">Smart Voice Ducking</p>
                   <p className="text-[10px] text-slate-400">
-                    Automatically lower music volume when voice-over or speech is speaking.
+                    Automatically lowers music volume when voice-over or speech is speaking.
                   </p>
                 </div>
                 <input
@@ -528,7 +550,7 @@ export default function MusicPickerModal({
             onClick={handleApply}
             className="px-5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 shadow-md shadow-cyan-500/25 hover:opacity-95 transition-opacity cursor-pointer"
           >
-            Apply Music
+            Apply Soundtrack
           </button>
         </div>
       </div>

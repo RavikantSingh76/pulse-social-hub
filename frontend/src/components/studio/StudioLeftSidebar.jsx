@@ -22,7 +22,7 @@ import {
   Clock,
   Film
 } from 'lucide-react';
-import { CURATED_MUSIC_LIBRARY } from '../reels/MusicPickerModal';
+import { musicLibraryService, MUSIC_CATEGORIES } from '../../services/musicLibraryService';
 import { REEL_TEMPLATES } from '../../services/projectStorageService';
 import { soundFx } from '../../utils/audioEffects';
 import toast from 'react-hot-toast';
@@ -76,6 +76,7 @@ export default function StudioLeftSidebar({
   onApplyTemplate
 }) {
   const [activeTab, setActiveTab] = useState('media'); // 'media' | 'music' | 'text' | 'voice' | 'transitions' | 'filters' | 'sfx' | 'templates'
+  const [selectedMusicCategory, setSelectedMusicCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewingAudioId, setPreviewingAudioId] = useState(null);
 
@@ -263,14 +264,65 @@ export default function StudioLeftSidebar({
         {/* 2. MUSIC TAB */}
         {activeTab === 'music' && (
           <div className="space-y-3">
+            {/* Active Track Banner (Now Playing) */}
+            {selectedMusic ? (
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-indigo-950/70 to-slate-900 border border-cyan-500/40 space-y-2 shadow-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <img
+                      src={selectedMusic.coverUrl || 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=300'}
+                      alt=""
+                      className="w-8 h-8 rounded-lg object-cover border border-cyan-400 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-white truncate">{selectedMusic.title}</p>
+                      <p className="text-[10px] text-cyan-300 truncate">{selectedMusic.artist}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      soundFx.playSwipeTick();
+                      onSelectMusic(null);
+                      toast.success('Music removed from reel');
+                    }}
+                    className="p-1 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors"
+                    title="Remove soundtrack"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Volume Slider */}
+                <div className="space-y-1 pt-1 border-t border-slate-800/80">
+                  <div className="flex justify-between text-[10px] text-slate-300">
+                    <span>Volume</span>
+                    <span className="font-mono text-cyan-400">{selectedMusic.volume ?? 75}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={selectedMusic.volume ?? 75}
+                    onChange={(e) => onSelectMusic({ ...selectedMusic, volume: Number(e.target.value) })}
+                    className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 text-center">
+                No music selected. Choose a soundtrack below or upload your own audio.
+              </div>
+            )}
+
             {/* Custom Audio Upload */}
             <div
               onClick={() => audioInputRef.current?.click()}
-              className="p-3 rounded-xl border border-dashed border-slate-700 hover:border-cyan-500 bg-slate-900/40 text-center space-y-1 cursor-pointer transition-colors"
+              className="p-2.5 rounded-xl border border-dashed border-slate-700 hover:border-cyan-500 bg-slate-900/40 text-center space-y-0.5 cursor-pointer transition-colors"
             >
-              <Music className="w-5 h-5 text-cyan-400 mx-auto" />
-              <p className="text-xs font-bold text-white">Upload Audio from Device</p>
-              <p className="text-[10px] text-slate-400">MP3, WAV, AAC, M4A</p>
+              <Music className="w-4 h-4 text-cyan-400 mx-auto" />
+              <p className="text-xs font-bold text-white">Upload Device Audio</p>
+              <p className="text-[9px] text-slate-400">MP3, WAV, AAC, M4A</p>
             </div>
             <input
               ref={audioInputRef}
@@ -283,7 +335,10 @@ export default function StudioLeftSidebar({
                 onSelectMusic({
                   id: `custom_${Date.now()}`,
                   title: file.name.replace(/\.[^/.]+$/, ''),
-                  artist: 'Your Device Audio',
+                  artist: 'Original Device Audio',
+                  genre: 'Custom Audio',
+                  duration: 180,
+                  coverUrl: 'https://images.pexels.com/photos/1624496/pexels-photo-1624496.jpeg?auto=compress&cs=tinysrgb&w=300',
                   audioUrl,
                   volume: 80,
                   startTime: 0,
@@ -295,10 +350,43 @@ export default function StudioLeftSidebar({
               className="hidden"
             />
 
-            {/* Curated Music Library */}
-            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Music Library</h4>
-            <div className="space-y-2">
-              {CURATED_MUSIC_LIBRARY.map((song) => {
+            {/* Category Badges Filter */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+                {MUSIC_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      soundFx.playSwipeTick();
+                      setSelectedMusicCategory(cat.id);
+                    }}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      selectedMusicCategory === cat.id
+                        ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                        : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    {cat.badge}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search Hindi, Bhojpuri, Lofi..."
+                  className="w-full pl-8 pr-2.5 py-1.5 text-[11px] rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+
+            {/* Song Cards List */}
+            <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+              {musicLibraryService.filterSongs({ category: selectedMusicCategory, query: searchQuery }).map((song) => {
                 const isSelected = selectedMusic?.id === song.id;
                 const isPlaying = previewingAudioId === song.id;
 
@@ -311,16 +399,19 @@ export default function StudioLeftSidebar({
                         : 'bg-slate-900 border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <button
                         onClick={() => handleTogglePreviewAudio(song)}
-                        className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 flex items-center justify-center shrink-0 cursor-pointer"
+                        className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 flex items-center justify-center shrink-0 cursor-pointer"
+                        title="Preview audio"
                       >
-                        {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
                       </button>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-white truncate">{song.title}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{song.artist}</p>
+                        <p className="text-[9px] text-slate-400 truncate">
+                          {song.artist} • <span className="text-cyan-400">{song.genre}</span>
+                        </p>
                       </div>
                     </div>
 
@@ -329,17 +420,17 @@ export default function StudioLeftSidebar({
                         soundFx.playChimeCTA();
                         onSelectMusic({
                           ...song,
-                          volume: 75,
+                          volume: selectedMusic?.volume ?? 75,
                           startTime: 0,
                           autoDucking: true
                         });
                         toast.success(`Selected: "${song.title}"`);
                       }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors cursor-pointer shrink-0 ${
                         isSelected ? 'bg-cyan-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
                       }`}
                     >
-                      {isSelected ? 'Active' : 'Apply'}
+                      {isSelected ? 'Active' : '+ Add'}
                     </button>
                   </div>
                 );
