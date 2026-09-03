@@ -65,6 +65,7 @@ com\socialmedia\entity\User$UserBuilder.class
 com\socialmedia\dto\Dtos$HashtagDetailResponse.class
 com\socialmedia\dto\Dtos$CreateHighlightRequest$CreateHighlightRequestBuilder.class
 com\socialmedia\entity\User.class
+com\socialmedia\controller\ReportController.class
 com\socialmedia\dto\Dtos$AuthResponse$AuthResponseBuilder.class
 com\socialmedia\dto\Dtos$ReactionRequest$ReactionRequestBuilder.class
 com\socialmedia\dto\Dtos$ConversationResponse$ConversationResponseBuilder.class

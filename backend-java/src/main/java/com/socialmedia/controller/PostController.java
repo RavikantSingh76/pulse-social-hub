@@ -20,6 +20,22 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<PostResponse>> createPostJson(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestBody CreatePostRequest req) {
+
+        PostResponse post = postService.createPost(
+                userPrincipal.getId(),
+                req.getCaption(),
+                req.getVisibility() != null ? req.getVisibility() : "PUBLIC",
+                req.getPostType() != null ? req.getPostType() : "POST",
+                req.getTitle(),
+                null
+        );
+        return ResponseEntity.ok(ApiResponse.success("Post created successfully", post));
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PostResponse>> createPost(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -119,7 +135,7 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success(res));
     }
 
-    @PostMapping("/{id}/reaction")
+    @PostMapping(path = {"/{id}/reactions", "/{id}/reaction"})
     public ResponseEntity<ApiResponse<Map<String, Object>>> toggleReaction(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id,
