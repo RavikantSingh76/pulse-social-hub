@@ -7,6 +7,7 @@ import FeedSwitcher from '../components/feed/FeedSwitcher';
 import CreateTextStoryModal from '../components/story/CreateTextStoryModal';
 import { useAuth } from '../context/AuthContext';
 import { postService } from '../services/services';
+import { feedFallbackService } from '../services/feedFallbackService';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Image, Video, Sparkles, RefreshCw, Type } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -32,18 +33,28 @@ export const HomePage = () => {
 
     try {
       const res = await postService.getFeed(feedType, pageNum, 10);
+      let newPosts = [];
       if (res.data?.success && res.data.data) {
-        const newPosts = res.data.data.posts || [];
-        if (pageNum === 1) {
-          setPosts(newPosts);
-        } else {
-          setPosts(prev => [...prev, ...newPosts]);
-        }
-        setHasMore(newPosts.length >= 10);
-        setPage(pageNum);
+        newPosts = res.data.data.posts || [];
       }
+
+      // If backend has 0 posts for this category, load guaranteed HD fallback posts
+      if (newPosts.length === 0 && pageNum === 1) {
+        newPosts = feedFallbackService.getFallbackPosts(feedType);
+      }
+
+      if (pageNum === 1) {
+        setPosts(newPosts);
+      } else {
+        setPosts(prev => [...prev, ...newPosts]);
+      }
+      setHasMore(newPosts.length >= 10);
+      setPage(pageNum);
     } catch (err) {
-      toast.error('Failed to load feed');
+      // Offline / API error fallback
+      if (pageNum === 1) {
+        setPosts(feedFallbackService.getFallbackPosts(feedType));
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);

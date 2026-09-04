@@ -5,6 +5,7 @@ import { CommentSection } from '../comment/CommentSection';
 import { ReportModal } from '../common/ReportModal';
 import { EditPostModal } from './EditPostModal';
 import { ShareModal } from './ShareModal';
+import FeedVideoPlayer from './FeedVideoPlayer';
 import ReactionPicker from '../common/ReactionPicker';
 import { useAuth } from '../../context/AuthContext';
 import { postService } from '../../services/services';
@@ -250,15 +251,27 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           onDoubleClick={handleDoubleTap}
         >
           {post.media[currentMediaIndex].type === 'VIDEO' ? (
-            <video
-              src={post.media[currentMediaIndex].url.startsWith('http') ? post.media[currentMediaIndex].url : `http://localhost:8080${post.media[currentMediaIndex].url}`}
-              controls
-              playsInline
-              className="w-full max-h-[580px] object-contain"
+            <FeedVideoPlayer
+              videoUrl={
+                post.media[currentMediaIndex].url.startsWith('http')
+                  ? post.media[currentMediaIndex].url
+                  : `http://localhost:8080${post.media[currentMediaIndex].url}`
+              }
+              posterUrl={
+                post.media[currentMediaIndex].thumbnailUrl ||
+                post.thumbnailUrl ||
+                (post.media[1] && post.media[1].type === 'IMAGE' ? post.media[1].url : null)
+              }
+              caption={post.caption}
+              onDoubleTap={handleDoubleTap}
             />
           ) : (
             <img
-              src={post.media[currentMediaIndex].url.startsWith('http') ? post.media[currentMediaIndex].url : `http://localhost:8080${post.media[currentMediaIndex].url}`}
+              src={
+                post.media[currentMediaIndex].url.startsWith('http')
+                  ? post.media[currentMediaIndex].url
+                  : `http://localhost:8080${post.media[currentMediaIndex].url}`
+              }
               alt="Post content"
               className="w-full max-h-[580px] object-contain"
             />
