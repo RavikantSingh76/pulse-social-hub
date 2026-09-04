@@ -88,7 +88,7 @@ export const Sidebar = ({ onOpenCreatePost }) => {
         {isAuthenticated && (
           <button
             onClick={onOpenCreatePost}
-            className="w-full mt-2 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-semibold shadow-md shadow-primary-500/25 active:scale-[0.98] transition-all cursor-pointer text-xs"
+            className="w-full mt-3 flex items-center justify-center space-x-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-pink-500 hover:opacity-95 text-white font-black shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all cursor-pointer text-xs uppercase tracking-wider"
           >
             <PlusSquare className="w-4 h-4" />
             <span>Create Post</span>
