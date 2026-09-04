@@ -287,6 +287,36 @@ export default function StudioTimeline({
               )}
             </div>
           </div>
+
+          {/* TRACK 4: Voiceover Track */}
+          {voiceoverTracks && voiceoverTracks.length > 0 && (
+            <div className="pt-1.5 px-2">
+              <div className="relative h-8 rounded-xl bg-slate-900/30 border border-slate-800/40 overflow-hidden">
+                {voiceoverTracks.map((vo, idx) => {
+                  const leftPx = (vo.startTime || 0) * zoomLevel;
+                  const widthPx = (vo.duration || 4) * zoomLevel;
+                  return (
+                    <div
+                      key={vo.id || idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        soundFx.playSwipeTick();
+                        onSelectElement(vo.id, 'voice');
+                      }}
+                      className="absolute inset-y-0.5 rounded-lg border flex items-center justify-between px-2 text-[10px] font-bold bg-emerald-950/50 border-emerald-500/40 text-emerald-300 cursor-pointer"
+                      style={{ left: `${leftPx}px`, width: `${widthPx}px` }}
+                    >
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Mic className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span className="truncate">{vo.title || 'Voice-over Clip'}</span>
+                      </div>
+                      <span className="font-mono text-[9px] text-emerald-400 shrink-0">{(vo.duration || 4).toFixed(1)}s</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

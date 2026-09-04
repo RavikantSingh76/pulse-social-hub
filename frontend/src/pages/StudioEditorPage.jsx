@@ -21,6 +21,7 @@ export default function StudioEditorPage() {
   const [project, setProject] = useState(null);
   const [projectName, setProjectName] = useState('Untitled Masterclass Reel');
   const [aspectRatio, setAspectRatio] = useState('9:16');
+  const [previewQuality, setPreviewQuality] = useState('1x');
   const [activeFilter, setActiveFilter] = useState('none');
   const [timelineClips, setTimelineClips] = useState([]);
   const [textLayers, setTextLayers] = useState([]);
@@ -389,6 +390,8 @@ export default function StudioEditorPage() {
         onRenameProject={setProjectName}
         aspectRatio={aspectRatio}
         onChangeAspectRatio={setAspectRatio}
+        previewQuality={previewQuality}
+        onChangePreviewQuality={setPreviewQuality}
         canUndo={historyIndex > 0}
         canRedo={historyIndex < history.length - 1}
         onUndo={handleUndo}

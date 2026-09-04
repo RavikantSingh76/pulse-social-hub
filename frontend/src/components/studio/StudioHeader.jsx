@@ -6,17 +6,14 @@ import {
   Save,
   Undo2,
   Redo2,
-  Sparkles,
   HelpCircle,
   Smartphone,
   Square,
   Monitor,
-  Check,
-  Zap,
-  Flame,
   Music2,
-  Play
+  Tv
 } from 'lucide-react';
+import { PulseLogo } from '../common/PulseLogo';
 import { soundFx } from '../../utils/audioEffects';
 import toast from 'react-hot-toast';
 
@@ -25,6 +22,8 @@ export default function StudioHeader({
   onRenameProject,
   aspectRatio,
   onChangeAspectRatio,
+  previewQuality = '1x',
+  onChangePreviewQuality,
   canUndo,
   canRedo,
   onUndo,
@@ -49,16 +48,14 @@ export default function StudioHeader({
 
   return (
     <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between z-30 select-none">
-      {/* Left: Back to Dashboard & Project Title */}
+      {/* Left: Brand Identity + Project Title */}
       <div className="flex items-center space-x-3 min-w-0">
-        <Link
-          to="/studio"
-          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-colors flex items-center gap-1 text-xs font-bold"
-          title="Back to Studio Dashboard"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Dashboard</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <PulseLogo variant="sidebar" size="xs" to="/studio" />
+          <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-400/30 text-[9px] font-black text-cyan-300 uppercase tracking-widest">
+            PRO
+          </span>
+        </div>
 
         <div className="h-4 w-px bg-slate-800" />
 
@@ -166,6 +163,29 @@ export default function StudioHeader({
             <span>16:9</span>
           </button>
         </div>
+
+        {/* Preview Quality Selector */}
+        {onChangePreviewQuality && (
+          <div className="hidden lg:flex items-center bg-slate-900 rounded-xl p-0.5 border border-slate-800 text-xs">
+            {['0.5x', '1x', '2x'].map((q) => (
+              <button
+                key={q}
+                onClick={() => {
+                  soundFx.playSwipeTick();
+                  onChangePreviewQuality(q);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                  previewQuality === q
+                    ? 'bg-indigo-600 text-white shadow-sm font-black'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title={`Preview render resolution: ${q}`}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Beat Sync Toggle */}
         <button
