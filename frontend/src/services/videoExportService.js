@@ -231,26 +231,42 @@ class VideoExportService {
 
           if (currentTime >= lStart && currentTime <= lEnd) {
             ctx.save();
-            ctx.font = `${layer.isBold ? 'bold ' : ''}${layer.fontSize || 36}px ${layer.fontFamily || 'Inter, sans-serif'}`;
+            const isBold = layer.isBold !== false;
+            const isItalic = layer.isItalic ? 'italic ' : '';
+            ctx.font = `${isItalic}${isBold ? 'bold ' : ''}${layer.fontSize || 36}px ${layer.fontFamily || 'Inter, sans-serif'}`;
             ctx.fillStyle = layer.color || '#ffffff';
-            ctx.textAlign = layer.align || 'center';
+
+            const textAlign = layer.textAlign || layer.align || 'center';
+            ctx.textAlign = textAlign;
             ctx.textBaseline = 'middle';
 
-            const x = width / 2 + (layer.posX || 0);
-            const y = (height * 0.75) + (layer.posY || 0);
+            const vertAlign = layer.verticalAlign || 'bottom';
+            let baseY = height * 0.78;
+            if (vertAlign === 'top') baseY = height * 0.15;
+            else if (vertAlign === 'center') baseY = height * 0.50;
+
+            let x = width / 2 + (layer.posX || 0);
+            if (textAlign === 'left') x = width * 0.1 + (layer.posX || 0);
+            else if (textAlign === 'right') x = width * 0.9 + (layer.posX || 0);
+
+            const y = baseY + (layer.posY || 0);
 
             // Draw Background Pill if enabled
             if (layer.hasBackground) {
               const textWidth = ctx.measureText(layer.text).width;
-              ctx.fillStyle = 'rgba(0,0,0,0.75)';
+              ctx.fillStyle = 'rgba(0,0,0,0.8)';
               ctx.beginPath();
-              ctx.roundRect(x - (textWidth / 2) - 16, y - 24, textWidth + 32, 48, 12);
+              let pillX = x - (textWidth / 2) - 16;
+              if (textAlign === 'left') pillX = x - 16;
+              else if (textAlign === 'right') pillX = x - textWidth - 16;
+
+              ctx.roundRect(pillX, y - 26, textWidth + 32, 52, 14);
               ctx.fill();
               ctx.fillStyle = layer.color || '#ffffff';
             }
 
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(0,0,0,0.85)';
+            ctx.shadowBlur = 10;
             ctx.fillText(layer.text, x, y);
             ctx.restore();
           }

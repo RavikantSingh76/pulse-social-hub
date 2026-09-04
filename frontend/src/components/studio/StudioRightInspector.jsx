@@ -11,10 +11,14 @@ import {
   RotateCw,
   Eye,
   Gauge,
-  Sparkles,
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Bold,
+  Italic,
+  Move,
+  ArrowUp,
+  ArrowDown,
   Volume2,
   Check,
   Layers,
@@ -229,7 +233,87 @@ export default function StudioRightInspector({
               />
             </div>
 
-            {/* Font Size */}
+            {/* Horizontal Alignment Toolbar */}
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Text Alignment</label>
+              <div className="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                {[
+                  { id: 'left', label: 'Left', icon: AlignLeft },
+                  { id: 'center', label: 'Center', icon: AlignCenter },
+                  { id: 'right', label: 'Right', icon: AlignRight }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = (selectedElement.textAlign || 'center') === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        soundFx.playSwipeTick();
+                        onUpdateTextLayer(selectedElement.id, { textAlign: item.id });
+                      }}
+                      className={`py-1.5 rounded-lg flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-fuchsia-600 text-white shadow-md shadow-fuchsia-600/30'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Vertical Anchor Position */}
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Vertical Position Anchor</label>
+              <div className="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                {[
+                  { id: 'top', label: 'Top', icon: ArrowUp },
+                  { id: 'center', label: 'Middle', icon: Move },
+                  { id: 'bottom', label: 'Bottom', icon: ArrowDown }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = (selectedElement.verticalAlign || 'bottom') === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        soundFx.playSwipeTick();
+                        onUpdateTextLayer(selectedElement.id, { verticalAlign: item.id });
+                      }}
+                      className={`py-1.5 rounded-lg flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Position Y Offset Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-slate-300">Vertical Offset (Y)</span>
+                <span className="font-mono text-cyan-400">{selectedElement.posY || 0}px</span>
+              </div>
+              <input
+                type="range"
+                min="-180"
+                max="180"
+                value={selectedElement.posY || 0}
+                onChange={(e) => onUpdateTextLayer(selectedElement.id, { posY: Number(e.target.value) })}
+                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+              />
+            </div>
+
+            {/* Font Size & Weight */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="font-bold text-slate-300">Font Size</span>
@@ -243,6 +327,32 @@ export default function StudioRightInspector({
                 onChange={(e) => onUpdateTextLayer(selectedElement.id, { fontSize: Number(e.target.value) })}
                 className="w-full accent-fuchsia-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
               />
+            </div>
+
+            {/* Bold / Italic Typography Toggles */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onUpdateTextLayer(selectedElement.id, { isBold: !selectedElement.isBold })}
+                className={`flex-1 py-1.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  selectedElement.isBold
+                    ? 'bg-fuchsia-600/30 text-fuchsia-300 border-fuchsia-500'
+                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                }`}
+              >
+                <Bold className="w-3.5 h-3.5" />
+                <span>Bold</span>
+              </button>
+              <button
+                onClick={() => onUpdateTextLayer(selectedElement.id, { isItalic: !selectedElement.isItalic })}
+                className={`flex-1 py-1.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  selectedElement.isItalic
+                    ? 'bg-fuchsia-600/30 text-fuchsia-300 border-fuchsia-500'
+                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                }`}
+              >
+                <Italic className="w-3.5 h-3.5" />
+                <span>Italic</span>
+              </button>
             </div>
 
             {/* Color Picker Presets */}

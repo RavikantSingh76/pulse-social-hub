@@ -191,6 +191,23 @@ export default function StudioCanvasPreview({
 
             if (!isVisible) return null;
 
+            const textAlign = layer?.textAlign || 'center';
+            const vertAlign = layer?.verticalAlign || 'bottom';
+
+            let verticalStyle = { bottom: '20%' };
+            if (vertAlign === 'top') {
+              verticalStyle = { top: '12%' };
+            } else if (vertAlign === 'center') {
+              verticalStyle = { top: '50%', transform: 'translateY(-50%)' };
+            }
+
+            const alignClass =
+              textAlign === 'left'
+                ? 'text-left justify-start'
+                : textAlign === 'right'
+                ? 'text-right justify-end'
+                : 'text-center justify-center';
+
             return (
               <div
                 key={layer.id}
@@ -198,21 +215,23 @@ export default function StudioCanvasPreview({
                   e.stopPropagation();
                   onSelectElement(layer.id, 'text');
                 }}
-                className={`absolute inset-x-4 text-center cursor-pointer transition-all ${
-                  isSelected ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-black rounded-xl' : ''
+                className={`absolute inset-x-6 flex ${alignClass} cursor-pointer transition-all z-20 ${
+                  isSelected ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-black rounded-2xl' : ''
                 }`}
                 style={{
-                  bottom: '22%',
-                  transform: `translate(${layer.posX || 0}px, ${layer.posY || 0}px)`
+                  ...verticalStyle,
+                  transform: `${verticalStyle.transform || ''} translate(${layer.posX || 0}px, ${layer.posY || 0}px)`
                 }}
               >
                 <div
-                  className={`inline-block px-4 py-2 rounded-2xl ${
-                    layer.hasBackground ? 'bg-black/75 backdrop-blur-md shadow-2xl border border-white/10' : ''
+                  className={`inline-block px-4 py-2 rounded-2xl max-w-full break-words ${
+                    layer.hasBackground ? 'bg-black/80 backdrop-blur-md shadow-2xl border border-white/10' : ''
                   }`}
                 >
                   <p
-                    className={`font-black tracking-wide leading-tight drop-shadow-md ${
+                    className={`leading-tight drop-shadow-md ${
+                      layer.isBold !== false ? 'font-black' : 'font-normal'
+                    } ${layer.isItalic ? 'italic' : ''} ${
                       layer.animation === 'pop'
                         ? 'animate-bounce'
                         : layer.animation === 'glow'
@@ -220,6 +239,7 @@ export default function StudioCanvasPreview({
                         : ''
                     }`}
                     style={{
+                      textAlign: textAlign,
                       fontSize: `${layer.fontSize ? layer.fontSize * 0.75 : 22}px`,
                       color: layer.color || '#ffffff'
                     }}
