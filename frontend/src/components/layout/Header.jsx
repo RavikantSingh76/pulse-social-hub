@@ -1,22 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Bell, MessageCircle } from 'lucide-react';
+import { Bell, MessageCircle } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
+import { PulseLogo } from '../common/PulseLogo';
 
 export const Header = () => {
   const { user } = useAuth();
 
   return (
-    <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-200 dark:border-zinc-800">
-      <Link to="/" className="flex items-center space-x-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center text-white shadow-md">
-          <Sparkles className="w-4 h-4" />
-        </div>
-        <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-          Pulse
-        </span>
-      </Link>
+    <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800">
+      <PulseLogo variant="full" size="sm" />
 
       <div className="flex items-center space-x-2">
         <ThemeToggle />

@@ -21,6 +21,8 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { PulseLogo } from '../common/PulseLogo';
+
 export const Sidebar = ({ onOpenCreatePost }) => {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -47,20 +49,10 @@ export const Sidebar = ({ onOpenCreatePost }) => {
   return (
     <aside className="hidden md:flex flex-col justify-between w-64 h-screen sticky top-0 px-4 py-6 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 select-none z-20 overflow-y-auto scrollbar-none">
       <div className="space-y-6">
-        {/* Brand Logo */}
-        <Link to="/" className="flex items-center space-x-3 px-3 py-2 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-600 via-indigo-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary-600 via-indigo-600 to-pink-500 bg-clip-text text-transparent">
-              Pulse
-            </span>
-            <span className="block text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 -mt-1">
-              Social Hub
-            </span>
-          </div>
-        </Link>
+        {/* Official Brand Logo */}
+        <div className="px-3 py-1.5">
+          <PulseLogo variant="sidebar" size="md" />
+        </div>
 
         {/* Navigation Links */}
         <nav className="space-y-1">

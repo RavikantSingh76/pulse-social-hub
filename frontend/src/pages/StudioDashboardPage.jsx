@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { projectStorageService, REEL_TEMPLATES } from '../services/projectStorageService';
 import { soundFx } from '../utils/audioEffects';
+import { PulseLogo } from '../components/common/PulseLogo';
 import toast from 'react-hot-toast';
 
 export default function StudioDashboardPage() {
@@ -105,10 +106,12 @@ export default function StudioDashboardPage() {
     <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8 space-y-8 select-none max-w-7xl mx-auto">
       {/* 1. TOP HERO HEADER & INTERVIEW DEMO CALL-TO-ACTION */}
       <div className="relative rounded-3xl p-6 sm:p-8 overflow-hidden bg-gradient-to-r from-cyan-950/70 via-slate-900 to-indigo-950/70 border border-cyan-500/30 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-            <span>Pulse Reel Creator & Editor Studio</span>
+        <div className="space-y-3 max-w-xl">
+          <div className="flex items-center gap-3">
+            <PulseLogo variant="sidebar" size="sm" to="/" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black uppercase tracking-wider">
+              Studio Pro
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight">
             Production-Grade Video Editing & Audio Mixing Suite

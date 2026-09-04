@@ -22,6 +22,7 @@ import { soundFx, REELS_AUDIO_TRACKS } from '../../utils/audioEffects';
 import { postService, userService } from '../../services/services';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { PulseLogo } from '../common/PulseLogo';
 import toast from 'react-hot-toast';
 
 export default function ReelCard({
@@ -275,14 +276,9 @@ export default function ReelCard({
         </div>
       )}
 
-      {/* 6. Top Header Controls (Sound Mute + Fullscreen) */}
+      {/* 6. Top Header Controls (Pulse Watermark + Sound Mute + Fullscreen) */}
       <div className="absolute top-4 inset-x-4 z-30 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider text-white uppercase bg-gradient-to-r from-cyan-500 to-indigo-600 shadow-md shadow-cyan-500/20 flex items-center gap-1">
-            <Flame className="w-3 h-3 text-amber-300 fill-amber-300" />
-            PULSE REEL
-          </span>
-        </div>
+        <PulseLogo variant="watermark" />
 
         <div className="flex items-center space-x-2">
           {/* Mute/Unmute Toggle */}

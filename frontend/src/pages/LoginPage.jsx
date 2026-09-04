@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Sparkles, Shield, User, LogIn } from 'lucide-react';
 import { ThemeToggle } from '../components/common/ThemeToggle';
+import { PulseLogo } from '../components/common/PulseLogo';
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -44,14 +45,11 @@ export const LoginPage = () => {
         <ThemeToggle />
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white shadow-xl shadow-indigo-500/20 mb-2">
-          <Sparkles className="w-8 h-8" />
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+        <div className="flex justify-center mb-1">
+          <PulseLogo variant="full" size="lg" showLink={false} />
         </div>
-        <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
-          Welcome to Pulse
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-zinc-400">
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
           Connect, share, and explore real-time visual stories.
         </p>
       </div>

@@ -17,6 +17,7 @@ import {
   AlertOctagon,
   X
 } from 'lucide-react';
+import { PulseLogo } from '../components/common/PulseLogo';
 import toast from 'react-hot-toast';
 
 export const AdminDashboardPage = () => {
@@ -118,15 +119,17 @@ export const AdminDashboardPage = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-900/40 flex items-center justify-between">
-        <div className="space-y-1">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-900/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1.5">
           <div className="flex items-center space-x-2">
-            <ShieldAlert className="w-6 h-6 text-amber-400" />
+            <ShieldAlert className="w-5 h-5 text-amber-400" />
             <span className="text-xs font-black uppercase tracking-widest text-amber-400">Admin Control Center</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Platform Administration</h1>
           <p className="text-xs text-slate-300">Oversee platform safety, verification badges, user warnings, and content moderation.</p>
         </div>
+
+        <PulseLogo variant="sidebar" size="md" to="/" />
       </div>
 
       {/* Tabs */}

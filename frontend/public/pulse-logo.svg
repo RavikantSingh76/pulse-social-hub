@@ -1,0 +1,40 @@
+<svg width="280" height="70" viewBox="0 0 280 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pulseBrandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#00F2FE" />
+      <stop offset="35%" stopColor="#38BDF8" />
+      <stop offset="70%" stopColor="#818CF8" />
+      <stop offset="100%" stopColor="#EC4899" />
+    </linearGradient>
+    <linearGradient id="pulseGlassBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#0F172A" />
+      <stop offset="100%" stopColor="#020617" />
+    </linearGradient>
+    <linearGradient id="pulseSparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="50%" stopColor="#A5F3FC" />
+      <stop offset="100%" stopColor="#F472B6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Pulse Icon Squircle -->
+  <g transform="translate(5, 5)">
+    <rect x="0" y="0" width="60" height="60" rx="18" fill="url(#pulseGlassBg)" stroke="url(#pulseBrandGrad)" stroke-width="2" />
+    <circle cx="30" cy="30" r="20" fill="#06B6D4" opacity="0.1" />
+    <circle cx="42" cy="20" r="10" fill="#EC4899" opacity="0.15" />
+    <path d="M18 46V16C18 16 22 13.5 30 13.5C40 13.5 45 18.5 45 26C45 33.5 39 37.5 30 37.5H24L26.5 31L29 40L31.5 35L34 37.5H40" stroke="url(#pulseBrandGrad)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M16 38H20L22 34L25 42L27 38H30" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    <g transform="translate(42, 14)">
+      <path d="M0 -4.5C0.5 -1.5 1.5 -0.5 4.5 0C1.5 0.5 0.5 1.5 0 4.5C-0.5 1.5 -1.5 0.5 -4.5 0C-1.5 -0.5 -0.5 -1.5 0 -4.5Z" fill="url(#pulseSparkGrad)" />
+      <circle cx="0" cy="0" r="1" fill="#FFFFFF" />
+    </g>
+    <circle cx="18" cy="46" r="2.2" fill="#38BDF8" />
+  </g>
+
+  <!-- Typography: PULSE -->
+  <text x="80" y="42" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="32" font-weight="900" fill="url(#pulseBrandGrad)" letter-spacing="-0.5">PULSE</text>
+  <circle cx="205" cy="26" r="3.5" fill="#EC4899" />
+
+  <!-- Typography: SOCIAL HUB -->
+  <text x="81" y="58" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="800" fill="#94A3B8" letter-spacing="4">SOCIAL HUB</text>
+</svg>
