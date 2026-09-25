@@ -19,9 +19,21 @@ node_modules/
 dist/
 build/
 
+# Java / Maven
+backend-java/target/
+*.jar
+*.class
+
 # Uploads directory
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Social Media backend uploads
+backend-java/uploads/
+
+# H2 database files
+backend-java/database/*.mv.db
+backend-java/database/*.trace.db
 
 # IDE and OS files
 .vscode/
