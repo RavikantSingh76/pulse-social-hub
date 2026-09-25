@@ -21,4 +21,8 @@ public interface UserFeedbackRepository extends JpaRepository<UserFeedback, Long
 
     @Query("SELECT uf.post.user.id FROM UserFeedback uf WHERE uf.user = :user AND uf.feedbackType = 'NOT_INTERESTED'")
     Set<Long> findNotInterestedAuthorIds(@Param("user") User user);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM UserFeedback uf WHERE uf.post.id = :postId")
+    void deleteByPostId(@Param("postId") Long postId);
 }

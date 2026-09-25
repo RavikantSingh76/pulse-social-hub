@@ -11,23 +11,31 @@ import {
   Send,
   Sparkles,
   Check,
-  Film
+  Film,
+  Trash2,
+  Edit3,
+  Copy,
+  Flag
 } from 'lucide-react';
 import { Avatar } from '../common/Avatar';
 import { CommentSection } from '../comment/CommentSection';
 import { ShareModal } from '../post/ShareModal';
+import { EditPostModal } from '../post/EditPostModal';
+import { ReportModal } from '../common/ReportModal';
 import { postService } from '../../services/services';
 import { soundFx } from '../../utils/audioEffects';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getYouTubeId, resolveSafeMediaUrl } from '../../utils/mediaUtils';
 
 export default function PostViewerModal({
   isOpen,
   onClose,
   posts = [],
   initialIndex = 0,
-  onPostUpdate
+  onPostUpdate,
+  onPostDelete
 }) {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -35,6 +43,9 @@ export default function PostViewerModal({
   const [likesCount, setLikesCount] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [heartPop, setHeartPop] = useState(false);
 
   useEffect(() => {
@@ -114,6 +125,33 @@ export default function PostViewerModal({
     }
   };
 
+  const isOwner = Boolean(
+    user && currentPost && (
+      (currentPost.userId && user.id === currentPost.userId) ||
+      (currentPost.user?.id && user.id === currentPost.user.id) ||
+      (currentPost.username && user.username === currentPost.username) ||
+      (currentPost.user?.username && user.username === currentPost.user.username)
+    )
+  );
+  const isAdmin = Boolean(user && user.role === 'ADMIN');
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
+    try {
+      await postService.deletePost(currentPost.id);
+      toast.success('Post deleted successfully');
+      setShowMenu(false);
+      if (onPostDelete) {
+        onPostDelete(currentPost.id);
+      } else if (onPostUpdate) {
+        onPostUpdate(currentPost.id, { isDeleted: true });
+      }
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete post');
+    }
+  };
+
   const mediaList = currentPost.media || currentPost.mediaList || [];
   const primaryMedia = mediaList.length > 0 ? mediaList[0] : null;
   const isVideo = currentPost.postType === 'VIDEO' || (primaryMedia && primaryMedia.mediaType === 'VIDEO') || currentPost.videoUrl;
@@ -163,14 +201,24 @@ export default function PostViewerModal({
           onDoubleClick={handleToggleLike}
         >
           {isVideo ? (
-            <video
-              src={mediaUrl}
-              className="w-full h-full max-h-[50vh] md:max-h-full object-contain"
-              autoPlay
-              loop
-              controls
-              playsInline
-            />
+            getYouTubeId(mediaUrl) ? (
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(mediaUrl)}?autoplay=1&controls=1&rel=0&playsinline=1`}
+                title={currentPost.caption || 'Video'}
+                className="w-full h-full min-h-[350px] object-contain border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; compute-pressure; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                src={resolveSafeMediaUrl(mediaUrl)}
+                className="w-full h-full max-h-[50vh] md:max-h-full object-contain"
+                autoPlay
+                loop
+                controls
+                playsInline
+              />
+            )
           ) : mediaUrl ? (
             <img
               src={mediaUrl}
@@ -215,15 +263,89 @@ export default function PostViewerModal({
               </div>
             </Link>
 
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                toast.success('Post link copied!');
-              }}
-              className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {(isOwner || isAdmin) && (
+                <button
+                  onClick={handleDelete}
+                  className="p-1.5 rounded-full text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                  title="Delete Post"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu(prev => !prev)}
+                  className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  title="Post options"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-slate-800 text-xs font-semibold animate-scale-up">
+                    {(isOwner || isAdmin) && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setShowMenu(false);
+                            setIsEditModalOpen(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Edit Post</span>
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                          <span>Delete Post</span>
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        setIsShareModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Share / Send DM</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        navigator.clipboard.writeText(`${window.location.origin}/post/${currentPost.id}`);
+                        toast.success('Post link copied!');
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Copy Link</span>
+                    </button>
+
+                    {!isOwner && (
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          setIsReportModalOpen(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-left text-amber-400 hover:bg-amber-950/40 hover:text-amber-300 transition-colors cursor-pointer"
+                      >
+                        <Flag className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Report Post</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Caption & Comments List */}
@@ -314,6 +436,27 @@ export default function PostViewerModal({
         onClose={() => setIsShareModalOpen(false)}
         post={currentPost}
       />
+
+      {/* Edit Post Modal */}
+      {isEditModalOpen && (
+        <EditPostModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          post={currentPost}
+          onUpdated={(updatedPost) => {
+            if (onPostUpdate) onPostUpdate(currentPost.id, updatedPost);
+          }}
+        />
+      )}
+
+      {/* Report Post Modal */}
+      {isReportModalOpen && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          postId={currentPost.id}
+        />
+      )}
     </div>
   );
 }

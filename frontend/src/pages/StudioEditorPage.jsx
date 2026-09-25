@@ -438,6 +438,8 @@ export default function StudioEditorPage() {
             setSelectedElementId(id);
             setSelectedElementType(type);
           }}
+          onUpdateTextLayer={handleUpdateTextLayer}
+          onDeleteTextLayer={handleDeleteTextLayer}
         />
 
         {/* Right Inspector */}

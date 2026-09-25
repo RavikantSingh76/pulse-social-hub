@@ -41,6 +41,18 @@ public class DatabaseSeeder implements CommandLineRunner {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private AudioTrackRepository audioTrackRepository;
+
+    @Autowired
+    private ReelRepository reelRepository;
+
+    @Autowired
+    private PlaylistRepository playlistRepository;
+
+    @Autowired
+    private PlaylistVideoRepository playlistVideoRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -49,6 +61,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         List<User> proUsers = seed200ProfessionalUsers();
         seedFollowersAndConversationsForRavikant(ravikant, proUsers);
         seedReels(ravikant, proUsers);
+        seedAudioTracksAndDedicatedReels(ravikant, proUsers);
+        seed100JavaInterviewShortVideosAndPlaylist(ravikant, proUsers);
+        repairExistingMixkitVideos();
     }
 
     private User seedAdminRavikant() {
@@ -387,21 +402,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         System.out.println("⏳ [DatabaseSeeder] Seeding 100 Professional HD Reels for Ravikant Singh...");
 
         String[] reelVideoUrls = {
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-hands-typing-on-a-laptop-keyboard-41589-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-neon-lights-in-a-cyberpunk-city-street-42512-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-night-sky-with-stars-and-a-full-moon-41617-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-waves-crashing-on-a-sandy-beach-42407-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-drone-view-of-a-winding-mountain-road-42354-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-people-working-in-a-modern-office-42488-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-tokyo-street-at-night-with-neon-signs-42490-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-forest-stream-in-the-sunlight-42468-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-city-street-in-the-rain-42502-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-vertical-fog-over-the-pine-trees-in-the-mountains-42463-large.mp4"
+            "/uploads/73e9cd71-31ff-41a5-9707-cb1c391b36dc.mp4",
+            "/uploads/81932133-f02b-48b6-8e61-ff5f112466ea.mp4",
+            "https://media.w3.org/2010/05/sintel/trailer.mp4",
+            "https://media.w3.org/2010/05/bunny/trailer.mp4",
+            "https://media.w3.org/2010/05/video/movie_300.mp4"
         };
 
         String[] techTopics = {
@@ -460,7 +465,438 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             seeded++;
         }
+        System.out.println("🎬 [DatabaseSeeder] Successfully seeded " + seeded + " high-engagement Reels for @ravikant");
+    }
 
-        System.out.println("✅ [DatabaseSeeder] Successfully seeded " + seeded + " professional reels for Chief Admin Ravikant Singh! (Total: 100)");
+    private void seedAudioTracksAndDedicatedReels(User ravikant, List<User> proUsers) {
+        if (audioTrackRepository.count() >= 10) {
+            System.out.println("🎵 [DatabaseSeeder] Audio library already seeded (" + audioTrackRepository.count() + " tracks in DB).");
+            return;
+        }
+
+        System.out.println("🎵 [DatabaseSeeder] Seeding 12+ High-Quality Curated Audio Tracks & Soundtracks...");
+
+        List<AudioTrack> tracks = List.of(
+            AudioTrack.builder()
+                .title("Neon Cyberpunk Lofi")
+                .artist("Pulse Audio Labs")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3")
+                .coverUrl("https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(180.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.ORIGINAL)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Pulse Social Hub")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(450L)
+                .genre("Cyberpunk / Electronic")
+                .build(),
+            AudioTrack.builder()
+                .title("Aarambh Hai Prachand (Trap Remix)")
+                .artist("DJ Yash & TechBeats")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-hollidays-690.mp3")
+                .coverUrl("https://images.pexels.com/photos/373912/pexels-photo-373912.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(195.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.PLATFORM)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Creative Commons Zero")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(920L)
+                .genre("Hindi / Fusion")
+                .build(),
+            AudioTrack.builder()
+                .title("Bhojpuri Desi Bass Anthem")
+                .artist("Khesari X DJ Raja")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3")
+                .coverUrl("https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(165.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.PLATFORM)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Royalty Free Music")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(780L)
+                .genre("Bhojpuri / Folk")
+                .build(),
+            AudioTrack.builder()
+                .title("Midnight Bengaluru Coding Drive")
+                .artist("Aarav Beats")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-delight-4.mp3")
+                .coverUrl("https://images.pexels.com/photos/4974914/pexels-photo-4974914.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(210.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.ORIGINAL)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Pulse Studio")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(340L)
+                .genre("Lofi / Chill")
+                .build(),
+            AudioTrack.builder()
+                .title("Sub-10ms High Energy Drop")
+                .artist("Pulse Master Audio")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3")
+                .coverUrl("https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(150.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.PLATFORM)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Platform Audio")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(610L)
+                .genre("EDM / House")
+                .build(),
+            AudioTrack.builder()
+                .title("Acoustic Sunset Horizon")
+                .artist("Kabir Sharma")
+                .audioUrl("https://assets.mixkit.co/music/preview/mixkit-sun-and-sky-577.mp3")
+                .coverUrl("https://images.pexels.com/photos/1624496/pexels-photo-1624496.jpeg?auto=compress&cs=tinysrgb&w=300")
+                .duration(175.0)
+                .createdBy(ravikant)
+                .sourceType(AudioTrack.SourceType.ORIGINAL)
+                .licenseType(AudioTrack.LicenseType.ROYALTY_FREE)
+                .copyrightOwner("Kabir Sharma Audio")
+                .isPublic(true)
+                .isActive(true)
+                .usageCount(290L)
+                .genre("Acoustic / Indie")
+                .build()
+        );
+
+        List<AudioTrack> savedTracks = audioTrackRepository.saveAll(tracks);
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded " + savedTracks.size() + " audio tracks!");
+
+        // Seed initial 20-second dedicated Reel entities
+        if (reelRepository.count() == 0) {
+            String[] videoUrls = {
+                "/uploads/73e9cd71-31ff-41a5-9707-cb1c391b36dc.mp4",
+                "/uploads/81932133-f02b-48b6-8e61-ff5f112466ea.mp4",
+                "https://media.w3.org/2010/05/sintel/trailer.mp4",
+                "https://media.w3.org/2010/05/bunny/trailer.mp4",
+                "https://media.w3.org/2010/05/video/movie_300.mp4"
+            };
+
+            String[] captions = {
+                "⚡ Stop building social apps the old way! Sub-10ms Spring Boot 3 + React 18 architecture #Tech #Architecture #Coding",
+                "🚀 Designing high-throughput event-driven microservices for 50k req/sec with zero latency! #SystemDesign #Java #SpringBoot",
+                "🌌 Late night engineering sprint in Bengaluru! Building the future with Pulse Social Hub ✨ #Bangalore #Developer #Reel",
+                "🔥 Instant WebRTC multi-peer video streaming with zero lag! Check it out live 🎥 #WebRTC #FullStack #TechLead",
+                "👑 Join the Pulse creator community today and share your high-caliber projects! 🚀 #PulseHub #Creator #CodingLife"
+            };
+
+            for (int i = 0; i < videoUrls.length; i++) {
+                AudioTrack track = savedTracks.get(i % savedTracks.size());
+                User creator = (i == 0 || ravikant == null) ? ravikant : proUsers.get(i % proUsers.size());
+                if (creator == null) creator = ravikant;
+
+                Reel reel = Reel.builder()
+                    .user(creator)
+                    .videoUrl(videoUrls[i])
+                    .thumbnailUrl(track.getCoverUrl())
+                    .caption(captions[i])
+                    .duration(15.0 + (i % 5))
+                    .audioTrack(track)
+                    .audioStartTime(10.0 * i)
+                    .audioEndTime(10.0 * i + 18.0)
+                    .originalAudioVolume(100)
+                    .musicVolume(80)
+                    .viewCount(1200L + i * 350)
+                    .likesCount(150L + i * 45)
+                    .commentsCount(25L + i * 8)
+                    .sharesCount(15L + i * 3)
+                    .status(Reel.ReelStatus.READY)
+                    .build();
+
+                reelRepository.save(reel);
+            }
+            System.out.println("✅ [DatabaseSeeder] Successfully seeded initial dedicated 20-second Reels!");
+        }
+    }
+
+    private void repairExistingMixkitVideos() {
+        try {
+            String[] reliableUrls = {
+                "/uploads/73e9cd71-31ff-41a5-9707-cb1c391b36dc.mp4",
+                "/uploads/81932133-f02b-48b6-8e61-ff5f112466ea.mp4",
+                "https://media.w3.org/2010/05/sintel/trailer.mp4",
+                "https://media.w3.org/2010/05/bunny/trailer.mp4",
+                "https://media.w3.org/2010/05/video/movie_300.mp4"
+            };
+
+            List<PostMedia> allMedia = postMediaRepository.findAll();
+            int updatedMedia = 0;
+            for (int i = 0; i < allMedia.size(); i++) {
+                PostMedia media = allMedia.get(i);
+                if (media.getMediaUrl() != null && (media.getMediaUrl().contains("mixkit.co") || media.getMediaUrl().contains("commondatastorage.googleapis.com"))) {
+                    media.setMediaUrl(reliableUrls[i % reliableUrls.length]);
+                    postMediaRepository.save(media);
+                    updatedMedia++;
+                }
+            }
+
+            List<Reel> allReels = reelRepository.findAll();
+            int updatedReels = 0;
+            for (int i = 0; i < allReels.size(); i++) {
+                Reel r = allReels.get(i);
+                if (r.getVideoUrl() != null && (r.getVideoUrl().contains("mixkit.co") || r.getVideoUrl().contains("commondatastorage.googleapis.com"))) {
+                    r.setVideoUrl(reliableUrls[i % reliableUrls.length]);
+                    reelRepository.save(r);
+                    updatedReels++;
+                }
+            }
+
+            if (updatedMedia > 0 || updatedReels > 0) {
+                System.out.println("🔄 [DatabaseSeeder] Upgraded " + updatedMedia + " post videos and " + updatedReels + " reels to verified fast W3C/MDN CDN streams!");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ [DatabaseSeeder] Video URL upgrade notice: " + e.getMessage());
+        }
+    }
+
+    private void seed100JavaInterviewShortVideosAndPlaylist(User ravikant, List<User> proUsers) {
+        if (ravikant == null) return;
+
+        String[] topics = {
+            // Core Java Basics (1 to 20)
+            "What is Java and Platform Independence?",
+            "JDK vs JRE vs JVM Explained Simply",
+            "How Java Main Method Works (public static void main)",
+            "Primitive Data Types in Java",
+            "Type Casting: Implicit vs Explicit",
+            "Operators in Java (Arithmetic & Logical)",
+            "If-Else and Switch-Case Statements",
+            "For Loop vs While Loop vs Do-While",
+            "Break and Continue Statements",
+            "One-Dimensional Arrays in Java",
+            "Multi-Dimensional Arrays Explained",
+            "String Class & String Pool in Java",
+            "Why Strings are Immutable in Java?",
+            "StringBuilder vs StringBuffer",
+            "Command Line Arguments in Java",
+            "Garbage Collection Basics in Java",
+            "Heap Memory vs Stack Memory",
+            "Scanner Class vs BufferedReader for Input",
+            "Packages and Access Modifiers (Public, Private, Protected)",
+            "Coding Best Practices & Naming Conventions",
+
+            // Object-Oriented Programming - OOPs (21 to 40)
+            "Classes and Objects in Java",
+            "Constructors (Default & Parameterized)",
+            "Constructor Overloading",
+            "The this Keyword",
+            "Inheritance (extends keyword)",
+            "Method Overriding vs Overloading",
+            "The super Keyword",
+            "Polymorphism (Compile-time vs Runtime)",
+            "Encapsulation (Getters and Setters)",
+            "Abstraction using Abstract Classes",
+            "Interfaces in Java (Multiple Inheritance)",
+            "Abstract Class vs Interface",
+            "The final Keyword (Variable, Method, Class)",
+            "The static Keyword (Variable, Method, Block)",
+            "Association, Aggregation, and Composition",
+            "Object Class Methods (toString, hashCode, equals)",
+            "Deep Copy vs Shallow Copy in Java",
+            "Covariant Return Types",
+            "Instance Initializer Blocks",
+            "Marker Interfaces (Serializable, Cloneable)",
+
+            // Exception Handling (41 to 50)
+            "What are Exceptions in Java?",
+            "Checked vs Unchecked Exceptions",
+            "Try-Catch Block Execution",
+            "Multiple Catch Blocks & Catching Multiple Exceptions",
+            "The finally Block",
+            "throw vs throws Keywords",
+            "Custom/User-Defined Exceptions",
+            "Try-with-Resources (AutoCloseable)",
+            "Exception Propagation in Java",
+            "Common Exceptions (NullPointerException, ArrayIndexOutOfBounds)",
+
+            // Java Collections Framework (51 to 75)
+            "Introduction to Collections Hierarchy",
+            "ArrayList vs LinkedList",
+            "Vector vs ArrayList",
+            "Iterators and ListIterators",
+            "HashSet, LinkedHashSet, and TreeSet",
+            "HashMap Internal Working",
+            "LinkedHashMap vs HashMap",
+            "TreeMap and SortedMap",
+            "Stack Data Structure in Java",
+            "Queue and PriorityQueue",
+            "Deque and ArrayDeque",
+            "Comparable vs Comparator Interfaces",
+            "Collections Utility Class Methods (sort, binarySearch)",
+            "Generics in Java (<T>)",
+            "Wildcards in Generics (Upper and Lower Bounded)",
+            "How HashMap Handles Collisions (Chaining & Treeification)",
+            "ConcurrentHashMap vs HashMap",
+            "CopyOnWriteArrayList Explained",
+            "IdentityHashMap vs HashMap",
+            "WeakHashMap Use Cases",
+            "EnumMap and EnumSet",
+            "PriorityQueue Custom Comparator",
+            "Removing Elements safely from ArrayList (Iterator vs for-each)",
+            "hashCode() and equals() Contract",
+            "Best Practices for Collections",
+
+            // Advanced Java & Multithreading (76 to 90)
+            "Creating Threads (Thread class vs Runnable interface)",
+            "Thread Lifecycle States",
+            "Thread Synchronization (synchronized keyword)",
+            "Inter-thread Communication (wait, notify, notifyAll)",
+            "Deadlock in Java & How to Prevent It",
+            "Volatile Keyword in Java",
+            "ThreadPool and ExecutorService Framework",
+            "Callable and Future Interfaces",
+            "CountDownLatch and CyclicBarrier",
+            "ReentrantLock vs Synchronized",
+            "Java Reflection API Basics",
+            "Annotations in Java (Built-in & Custom)",
+            "Serialization and Deserialization (serialVersionUID)",
+            "Transient Keyword in Java",
+            "Introduction to Java Modules (Java 9+)",
+
+            // Java 8+ Modern Features & Coding Problems (91 to 100)
+            "Lambda Expressions in Java 8",
+            "Functional Interfaces (@FunctionalInterface)",
+            "Predicate, Consumer, Supplier, and Function",
+            "Stream API Introduction & Operations",
+            "Intermediate vs Terminal Operations in Streams",
+            "Method References (ClassName::methodName)",
+            "Optional Class (Avoiding NullPointerException)",
+            "Default and Static Methods in Interfaces",
+            "Record Classes (Data Carriers) in Modern Java",
+            "Top 5 Coding Snippets Asked in Java Interviews"
+        };
+
+        String[] videoStreams = {
+            "/uploads/73e9cd71-31ff-41a5-9707-cb1c391b36dc.mp4",
+            "/uploads/81932133-f02b-48b6-8e61-ff5f112466ea.mp4",
+            "https://media.w3.org/2010/05/sintel/trailer.mp4",
+            "https://media.w3.org/2010/05/bunny/trailer.mp4",
+            "https://media.w3.org/2010/05/video/movie_300.mp4"
+        };
+
+        String[] coverThumbnails = {
+            "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80"
+        };
+
+        // Create or find dedicated 100-Day Java Masterclass Playlist
+        List<Playlist> userPlaylists = playlistRepository.findByUserIdOrderByCreatedAtDesc(ravikant.getId());
+        Playlist masterPlaylist = userPlaylists.stream()
+            .filter(p -> p.getName().equalsIgnoreCase("100-Day Java Masterclass & Interview Prep"))
+            .findFirst()
+            .orElseGet(() -> playlistRepository.save(Playlist.builder()
+                .user(ravikant)
+                .name("100-Day Java Masterclass & Interview Prep")
+                .description("Complete 100-Day Masterclass covering Core Java, OOPs, Exception Handling, Collections Framework, Multithreading & Concurrency, and Modern Java 8+ Streams.")
+                .coverUrl("https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80")
+                .visibility(Playlist.Visibility.PUBLIC)
+                .build()));
+
+        List<AudioTrack> tracks = audioTrackRepository.findAll();
+
+        System.out.println("⏳ [DatabaseSeeder] Seeding 100 Unique Java Interview Short Videos & Sequential Playlist...");
+
+        for (int i = 0; i < topics.length; i++) {
+            String topic = topics[i];
+            int episodeNum = i + 1;
+            String videoTitle = "Episode #" + episodeNum + ": " + topic;
+            String streamUrl = videoStreams[i % videoStreams.length];
+            String thumbUrl = coverThumbnails[i % coverThumbnails.length];
+
+            String categoryTag;
+            if (episodeNum <= 20) categoryTag = "#CoreJava #JavaBasics";
+            else if (episodeNum <= 40) categoryTag = "#OOPs #JavaArchitecture";
+            else if (episodeNum <= 50) categoryTag = "#ExceptionHandling #CleanCode";
+            else if (episodeNum <= 75) categoryTag = "#Collections #DataStructures";
+            else if (episodeNum <= 90) categoryTag = "#Multithreading #Concurrency";
+            else categoryTag = "#Java8 #StreamAPI #ModernJava";
+
+            String caption = "💡 Day " + episodeNum + "/100: " + topic + " — In-depth breakdown for technical rounds & senior engineering interviews! 🚀 #Java #InterviewPrep #Coding #Backend #SpringBoot " + categoryTag;
+
+            // Check if Post already exists
+            Optional<Post> existingPost = postRepository.findAll().stream()
+                .filter(p -> videoTitle.equals(p.getTitle()))
+                .findFirst();
+
+            Post post;
+            if (existingPost.isPresent()) {
+                post = existingPost.get();
+            } else {
+                User creator = (i % 3 == 0 || ravikant == null) ? ravikant : (proUsers != null && !proUsers.isEmpty() ? proUsers.get(i % proUsers.size()) : ravikant);
+                if (creator == null) creator = ravikant;
+
+                post = Post.builder()
+                    .user(creator)
+                    .title(videoTitle)
+                    .caption(caption)
+                    .postType(Post.PostType.VIDEO)
+                    .visibility(Post.Visibility.PUBLIC)
+                    .viewCount((long)(1500 + (i * 85)))
+                    .build();
+
+                post = postRepository.save(post);
+
+                postMediaRepository.save(PostMedia.builder()
+                    .post(post)
+                    .mediaUrl(streamUrl)
+                    .mediaType(PostMedia.MediaType.VIDEO)
+                    .orderIndex(0)
+                    .build());
+            }
+
+            // Ensure Reel entity exists
+            int currentEp = episodeNum;
+            Optional<Reel> existingReel = reelRepository.findAll().stream()
+                .filter(r -> r.getCaption() != null && r.getCaption().contains("Day " + currentEp + "/100"))
+                .findFirst();
+
+            if (existingReel.isEmpty()) {
+                AudioTrack track = tracks.isEmpty() ? null : tracks.get(i % tracks.size());
+                reelRepository.save(Reel.builder()
+                    .user(ravikant)
+                    .videoUrl(streamUrl)
+                    .thumbnailUrl(thumbUrl)
+                    .caption(caption)
+                    .duration(18.0)
+                    .audioTrack(track)
+                    .audioStartTime(0.0)
+                    .audioEndTime(18.0)
+                    .originalAudioVolume(100)
+                    .musicVolume(60)
+                    .viewCount((long)(2100 + i * 110))
+                    .likesCount((long)(320 + i * 25))
+                    .commentsCount((long)(45 + i * 6))
+                    .sharesCount((long)(20 + i * 4))
+                    .status(Reel.ReelStatus.READY)
+                    .build());
+            }
+
+            // Ensure added into the 100-video playlist sequentially
+            String videoIdStr = post.getId().toString();
+            if (!playlistVideoRepository.existsByPlaylistIdAndVideoId(masterPlaylist.getId(), videoIdStr)) {
+                playlistVideoRepository.save(PlaylistVideo.builder()
+                    .playlist(masterPlaylist)
+                    .videoId(videoIdStr)
+                    .position(episodeNum)
+                    .build());
+            }
+        }
+
+        long count = playlistVideoRepository.countByPlaylistId(masterPlaylist.getId());
+        System.out.println("✅ [DatabaseSeeder] Successfully seeded all 100 Unique Java Interview Short Videos! Playlist count: " + count + "/100 videos.");
     }
 }
+

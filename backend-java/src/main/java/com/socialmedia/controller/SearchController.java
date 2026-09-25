@@ -43,7 +43,7 @@ public class SearchController {
     }
 
     // Recommendations
-    @GetMapping("/suggested-users")
+    @GetMapping(path = {"/suggested-users", "/suggested"})
     public ResponseEntity<ApiResponse<List<UserResponse>>> getSuggestedUsers(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(value = "limit", defaultValue = "5") int limit) {

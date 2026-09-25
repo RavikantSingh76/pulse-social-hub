@@ -95,6 +95,8 @@ export const CreatePostModal = ({ isOpen, onClose, onSuccess }) => {
               <div>
                 <p className="font-bold text-sm text-gray-900 dark:text-gray-100">{user?.displayName}</p>
                 <select
+                  id="modal-post-visibility"
+                  name="visibility"
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
                   className="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-lg px-2 py-1 border border-transparent focus:outline-none focus:ring-1 focus:ring-cyan-500 font-semibold cursor-pointer"
@@ -124,6 +126,8 @@ export const CreatePostModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Video Title (if video mode) */}
           {postType === 'VIDEO' && (
             <input
+              id="modal-post-title"
+              name="title"
               type="text"
               placeholder="Reel / Video Title..."
               value={title}
@@ -134,6 +138,8 @@ export const CreatePostModal = ({ isOpen, onClose, onSuccess }) => {
 
           {/* Caption Input */}
           <textarea
+            id="modal-post-caption"
+            name="caption"
             rows="3"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}

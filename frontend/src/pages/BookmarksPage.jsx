@@ -158,6 +158,8 @@ export default function BookmarksPage() {
             <h3 className="font-bold text-slate-900 dark:text-white mb-3">Create Collection Folder</h3>
             <form onSubmit={handleCreateCollection} className="space-y-4">
               <input
+                id="bookmark-collection-name"
+                name="collectionName"
                 type="text"
                 value={newColName}
                 onChange={(e) => setNewColName(e.target.value)}

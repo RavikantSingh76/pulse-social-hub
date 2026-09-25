@@ -51,11 +51,17 @@ export const RegisterPage = () => {
         <div className="bg-white dark:bg-zinc-900 py-8 px-6 shadow-xl shadow-gray-200/50 dark:shadow-black/40 rounded-3xl border border-gray-100 dark:border-zinc-800/80 sm:px-10 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+              <label
+                htmlFor="register-displayName"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5"
+              >
                 Full Display Name
               </label>
               <input
+                id="register-displayName"
+                name="displayName"
                 type="text"
+                autoComplete="name"
                 required
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
@@ -65,11 +71,17 @@ export const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+              <label
+                htmlFor="register-username"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5"
+              >
                 Username
               </label>
               <input
+                id="register-username"
+                name="username"
                 type="text"
+                autoComplete="username"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -79,11 +91,17 @@ export const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+              <label
+                htmlFor="register-email"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5"
+              >
                 Email Address
               </label>
               <input
+                id="register-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -93,11 +111,17 @@ export const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5">
+              <label
+                htmlFor="register-password"
+                className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-zinc-300 mb-1.5"
+              >
                 Password
               </label>
               <input
+                id="register-password"
+                name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={6}
                 value={password}

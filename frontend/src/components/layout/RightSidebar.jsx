@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { userService } from '../../services/services';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../common/Avatar';
-import { Search, TrendingUp, Sparkles, Check, UserPlus } from 'lucide-react';
+import { Search, TrendingUp, Sparkles, Check, UserPlus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const RightSidebar = () => {
@@ -14,6 +14,8 @@ export const RightSidebar = () => {
   const [followingMap, setFollowingMap] = useState({});
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTag = searchParams.get('tag');
 
   useEffect(() => {
     if (currentUser) {
@@ -157,27 +159,62 @@ export const RightSidebar = () => {
 
       {/* Trending Hashtags */}
       <div className="bg-gray-50/80 dark:bg-zinc-900/60 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800/60 space-y-4">
-        <div className="flex items-center space-x-2">
-          <TrendingUp className="w-4 h-4 text-pink-500" />
-          <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100">Trending Topics</h4>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="w-4 h-4 text-pink-500" />
+            <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100">Trending Topics</h4>
+          </div>
+          {activeTag && (
+            <button
+              onClick={() => {
+                setSearchParams({});
+                navigate('/');
+              }}
+              className="text-[11px] font-bold text-emerald-500 hover:text-emerald-400 cursor-pointer flex items-center space-x-0.5"
+            >
+              <span>Clear</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
 
-        <div className="space-y-2.5">
-          {trendingTags.map((t) => (
-            <Link
-              key={t.tag}
-              to={`/hashtags/${t.tag}`}
-              className="flex items-center justify-between p-2 rounded-xl hover:bg-white dark:hover:bg-zinc-800/60 transition-colors"
-            >
-              <div>
-                <p className="text-xs font-bold text-gray-800 dark:text-zinc-200">#{t.tag}</p>
-                <p className="text-[11px] text-gray-400 dark:text-zinc-500">Trending across Pulse</p>
+        <div className="space-y-2">
+          {trendingTags.map((t) => {
+            const isCurrent = activeTag?.toLowerCase() === t.tag.toLowerCase();
+            return (
+              <div
+                key={t.tag}
+                onClick={() => {
+                  if (isCurrent) {
+                    setSearchParams({});
+                    navigate('/');
+                  } else {
+                    setSearchParams({ tag: t.tag });
+                    navigate(`/?tag=${t.tag}`);
+                  }
+                }}
+                className={`flex items-center justify-between p-2.5 rounded-2xl cursor-pointer transition-all ${
+                  isCurrent
+                    ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold shadow-sm'
+                    : 'hover:bg-white dark:hover:bg-zinc-800/70'
+                }`}
+              >
+                <div>
+                  <p className={`text-xs font-bold ${isCurrent ? 'text-emerald-400' : 'text-gray-800 dark:text-zinc-200'}`}>
+                    #{t.tag}
+                  </p>
+                  <p className="text-[10px] text-gray-400 dark:text-zinc-500">Trending on Pulse</p>
+                </div>
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
+                  isCurrent
+                    ? 'bg-emerald-500 text-white'
+                    : 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50'
+                }`}>
+                  {t.count}
+                </span>
               </div>
-              <span className="text-[11px] font-semibold text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md">
-                {t.count} posts
-              </span>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
 

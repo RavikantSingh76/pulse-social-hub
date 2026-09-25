@@ -62,6 +62,8 @@ export default function StudioHeader({
         {isEditingName ? (
           <form onSubmit={handleNameSubmit} className="flex items-center gap-1">
             <input
+              id="project-name-input"
+              name="projectName"
               type="text"
               autoFocus
               value={nameInput}

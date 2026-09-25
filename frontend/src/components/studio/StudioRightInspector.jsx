@@ -22,7 +22,9 @@ import {
   Volume2,
   Check,
   Layers,
-  Settings
+  Settings,
+  Sun,
+  Sparkles
 } from 'lucide-react';
 import { soundFx } from '../../utils/audioEffects';
 import toast from 'react-hot-toast';
@@ -178,6 +180,93 @@ export default function StudioRightInspector({
               />
             </div>
 
+            {/* Brightness / Exposure Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-slate-300 flex items-center gap-1">
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Brightness</span>
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-amber-400">{selectedElement.brightness ?? 100}%</span>
+                  {(selectedElement.brightness !== undefined && selectedElement.brightness !== 100) && (
+                    <button
+                      onClick={() => onUpdateClip(selectedElement.id, { brightness: 100 })}
+                      className="text-[9px] text-slate-500 hover:text-amber-400 font-mono"
+                    >
+                      (reset)
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="180"
+                value={selectedElement.brightness ?? 100}
+                onChange={(e) => onUpdateClip(selectedElement.id, { brightness: Number(e.target.value) })}
+                className="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+              />
+            </div>
+
+            {/* Contrast Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-slate-300 flex items-center gap-1">
+                  <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Contrast</span>
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-cyan-400">{selectedElement.contrast ?? 100}%</span>
+                  {(selectedElement.contrast !== undefined && selectedElement.contrast !== 100) && (
+                    <button
+                      onClick={() => onUpdateClip(selectedElement.id, { contrast: 100 })}
+                      className="text-[9px] text-slate-500 hover:text-cyan-400 font-mono"
+                    >
+                      (reset)
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="160"
+                value={selectedElement.contrast ?? 100}
+                onChange={(e) => onUpdateClip(selectedElement.id, { contrast: Number(e.target.value) })}
+                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+              />
+            </div>
+
+            {/* Saturation Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-slate-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+                  <span>Saturation</span>
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-fuchsia-400">{selectedElement.saturation ?? 100}%</span>
+                  {(selectedElement.saturation !== undefined && selectedElement.saturation !== 100) && (
+                    <button
+                      onClick={() => onUpdateClip(selectedElement.id, { saturation: 100 })}
+                      className="text-[9px] text-slate-500 hover:text-fuchsia-400 font-mono"
+                    >
+                      (reset)
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={selectedElement.saturation ?? 100}
+                onChange={(e) => onUpdateClip(selectedElement.id, { saturation: Number(e.target.value) })}
+                className="w-full accent-fuchsia-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+              />
+            </div>
+
             {/* Clip Duration Trimmer */}
             <div className="space-y-1 pt-2 border-t border-slate-800/80">
               <div className="flex justify-between text-xs">
@@ -198,6 +287,27 @@ export default function StudioRightInspector({
               />
             </div>
 
+            {/* Clip Audio Track & Volume Slider */}
+            {selectedElement.mediaType === 'VIDEO' && (
+              <div className="space-y-1 pt-2 border-t border-slate-800/80">
+                <div className="flex justify-between text-xs">
+                  <span className="font-bold text-slate-300 flex items-center gap-1">
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Clip Audio Volume</span>
+                  </span>
+                  <span className="font-mono text-emerald-400">{selectedElement.volume !== undefined ? selectedElement.volume : 100}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={selectedElement.volume !== undefined ? selectedElement.volume : 100}
+                  onChange={(e) => onUpdateClip(selectedElement.id, { volume: Number(e.target.value) })}
+                  className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                />
+              </div>
+            )}
+
             {/* Quick Action Buttons */}
             <div className="pt-2 border-t border-slate-800/80 space-y-2">
               <button
@@ -207,6 +317,7 @@ export default function StudioRightInspector({
                 <Scissors className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Split at Playhead (S)</span>
               </button>
+
 
               <button
                 onClick={() => onDuplicateClip(selectedElement.id)}
@@ -222,7 +333,7 @@ export default function StudioRightInspector({
         {/* 2. TEXT LAYER INSPECTOR */}
         {elementType === 'text' && (
           <div className="space-y-4">
-            {/* Text String Input */}
+            {/* Text Content Input */}
             <div>
               <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Text Content</label>
               <textarea
@@ -233,9 +344,119 @@ export default function StudioRightInspector({
               />
             </div>
 
+            {/* 9-Point Visual Alignment Matrix */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-black uppercase text-slate-400">9-Point Alignment Grid</label>
+                <span className="text-[9px] font-mono text-cyan-400 font-bold">1-Tap Snap</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5 bg-slate-900 p-2 rounded-2xl border border-slate-800">
+                {[
+                  { h: 'left', v: 'top', icon: '↖', label: 'Top-L' },
+                  { h: 'center', v: 'top', icon: '⬆', label: 'Top' },
+                  { h: 'right', v: 'top', icon: '↗', label: 'Top-R' },
+                  { h: 'left', v: 'center', icon: '⬅', label: 'Mid-L' },
+                  { h: 'center', v: 'center', icon: '✛', label: 'Center' },
+                  { h: 'right', v: 'center', icon: '➡', label: 'Mid-R' },
+                  { h: 'left', v: 'bottom', icon: '↙', label: 'Bot-L' },
+                  { h: 'center', v: 'bottom', icon: '⬇', label: 'Bot (Reels)' },
+                  { h: 'right', v: 'bottom', icon: '↘', label: 'Bot-R' }
+                ].map((grid, gIdx) => {
+                  const isCurrent =
+                    (selectedElement.textAlign || 'center') === grid.h &&
+                    (selectedElement.verticalAlign || 'bottom') === grid.v &&
+                    !selectedElement.posX &&
+                    !selectedElement.posY;
+
+                  return (
+                    <button
+                      key={gIdx}
+                      onClick={() => {
+                        soundFx.playReactionBubble();
+                        onUpdateTextLayer(selectedElement.id, {
+                          textAlign: grid.h,
+                          verticalAlign: grid.v,
+                          posX: 0,
+                          posY: 0
+                        });
+                      }}
+                      className={`p-2 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-gradient-to-br from-cyan-500 to-fuchsia-600 text-white font-black shadow-lg shadow-cyan-500/20 scale-102'
+                          : 'bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80'
+                      }`}
+                      title={`${grid.label} Alignment`}
+                    >
+                      <span className="text-sm leading-none">{grid.icon}</span>
+                      <span className="text-[8px] font-bold mt-1 tracking-tight">{grid.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Style Presets Palette */}
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Visual Style Presets</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  {
+                    name: '✨ Neon Glow',
+                    color: '#38bdf8',
+                    bg: false,
+                    anim: 'glow',
+                    isBold: true,
+                    spacing: 1
+                  },
+                  {
+                    name: '💬 Glass Subtitle',
+                    color: '#ffffff',
+                    bg: true,
+                    anim: 'none',
+                    isBold: true,
+                    spacing: 0
+                  },
+                  {
+                    name: '⚡ Cyber Pop',
+                    color: '#facc15',
+                    bg: true,
+                    anim: 'pop',
+                    isBold: true,
+                    spacing: 2
+                  },
+                  {
+                    name: '👑 Minimal Luxury',
+                    color: '#ffffff',
+                    bg: false,
+                    anim: 'slide',
+                    isBold: false,
+                    spacing: 4
+                  }
+                ].map((preset, pIdx) => (
+                  <button
+                    key={pIdx}
+                    onClick={() => {
+                      soundFx.playChimeCTA();
+                      onUpdateTextLayer(selectedElement.id, {
+                        color: preset.color,
+                        hasBackground: preset.bg,
+                        animation: preset.anim,
+                        isBold: preset.isBold,
+                        letterSpacing: preset.spacing
+                      });
+                    }}
+                    className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-400 text-left transition-all cursor-pointer text-xs font-bold text-slate-200 hover:text-white"
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Horizontal Alignment Toolbar */}
             <div>
-              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Text Alignment</label>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Horizontal Flow</label>
               <div className="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
                 {[
                   { id: 'left', label: 'Left', icon: AlignLeft },
@@ -265,55 +486,60 @@ export default function StudioRightInspector({
               </div>
             </div>
 
-            {/* Vertical Anchor Position */}
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Vertical Position Anchor</label>
-              <div className="grid grid-cols-3 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                {[
-                  { id: 'top', label: 'Top', icon: ArrowUp },
-                  { id: 'center', label: 'Middle', icon: Move },
-                  { id: 'bottom', label: 'Bottom', icon: ArrowDown }
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isActive = (selectedElement.verticalAlign || 'bottom') === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        soundFx.playSwipeTick();
-                        onUpdateTextLayer(selectedElement.id, { verticalAlign: item.id });
-                      }}
-                      className={`py-1.5 rounded-lg flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
+            {/* Position X & Y Sliders */}
+            <div className="space-y-2 pt-1 border-t border-slate-800/80">
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="font-bold text-slate-300">Offset X</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-mono text-cyan-400">{selectedElement.posX || 0}px</span>
+                    {selectedElement.posX !== 0 && (
+                      <button
+                        onClick={() => onUpdateTextLayer(selectedElement.id, { posX: 0 })}
+                        className="text-[9px] text-slate-500 hover:text-cyan-400 font-mono"
+                      >
+                        (reset)
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="-150"
+                  max="150"
+                  value={selectedElement.posX || 0}
+                  onChange={(e) => onUpdateTextLayer(selectedElement.id, { posX: Number(e.target.value) })}
+                  className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="font-bold text-slate-300">Offset Y</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-mono text-fuchsia-400">{selectedElement.posY || 0}px</span>
+                    {selectedElement.posY !== 0 && (
+                      <button
+                        onClick={() => onUpdateTextLayer(selectedElement.id, { posY: 0 })}
+                        className="text-[9px] text-slate-500 hover:text-fuchsia-400 font-mono"
+                      >
+                        (reset)
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="-180"
+                  max="180"
+                  value={selectedElement.posY || 0}
+                  onChange={(e) => onUpdateTextLayer(selectedElement.id, { posY: Number(e.target.value) })}
+                  className="w-full accent-fuchsia-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                />
               </div>
             </div>
 
-            {/* Position Y Offset Slider */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="font-bold text-slate-300">Vertical Offset (Y)</span>
-                <span className="font-mono text-cyan-400">{selectedElement.posY || 0}px</span>
-              </div>
-              <input
-                type="range"
-                min="-180"
-                max="180"
-                value={selectedElement.posY || 0}
-                onChange={(e) => onUpdateTextLayer(selectedElement.id, { posY: Number(e.target.value) })}
-                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
-              />
-            </div>
-
-            {/* Font Size & Weight */}
+            {/* Font Size Slider */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="font-bold text-slate-300">Font Size</span>
@@ -322,19 +548,35 @@ export default function StudioRightInspector({
               <input
                 type="range"
                 min="16"
-                max="64"
+                max="72"
                 value={selectedElement.fontSize || 32}
                 onChange={(e) => onUpdateTextLayer(selectedElement.id, { fontSize: Number(e.target.value) })}
                 className="w-full accent-fuchsia-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
               />
             </div>
 
-            {/* Bold / Italic Typography Toggles */}
+            {/* Letter Spacing Slider */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-slate-300">Letter Spacing</span>
+                <span className="font-mono text-cyan-400">{selectedElement.letterSpacing || 0}px</span>
+              </div>
+              <input
+                type="range"
+                min="-2"
+                max="10"
+                value={selectedElement.letterSpacing || 0}
+                onChange={(e) => onUpdateTextLayer(selectedElement.id, { letterSpacing: Number(e.target.value) })}
+                className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+              />
+            </div>
+
+            {/* Bold / Italic / Text Case Toggles */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onUpdateTextLayer(selectedElement.id, { isBold: !selectedElement.isBold })}
                 className={`flex-1 py-1.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  selectedElement.isBold
+                  selectedElement.isBold !== false
                     ? 'bg-fuchsia-600/30 text-fuchsia-300 border-fuchsia-500'
                     : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
                 }`}
@@ -364,7 +606,7 @@ export default function StudioRightInspector({
                     key={color}
                     onClick={() => onUpdateTextLayer(selectedElement.id, { color })}
                     className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
-                      selectedElement.color === color ? 'scale-125 border-white' : 'border-transparent hover:scale-110'
+                      selectedElement.color === color ? 'scale-125 border-white shadow-lg' : 'border-transparent hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -374,7 +616,7 @@ export default function StudioRightInspector({
 
             {/* Background Pill Switch */}
             <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-xl border border-slate-800">
-              <span className="text-xs font-bold text-slate-200">Dark Background Pill</span>
+              <span className="text-xs font-bold text-slate-200">Dark Background Glass Pill</span>
               <input
                 type="checkbox"
                 checked={selectedElement.hasBackground || false}

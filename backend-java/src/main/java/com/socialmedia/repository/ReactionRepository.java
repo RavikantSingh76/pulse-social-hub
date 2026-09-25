@@ -32,4 +32,16 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     void deleteByUserAndPost(User user, Post post);
     void deleteByUserAndComment(User user, Comment comment);
     void deleteByUserAndMessage(User user, Message message);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Reaction r WHERE r.post.id = :postId")
+    void deleteByPostId(@Param("postId") Long postId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Reaction r WHERE r.comment.post.id = :postId")
+    void deleteByCommentPostId(@Param("postId") Long postId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Reaction r WHERE r.comment.id = :commentId")
+    void deleteByCommentId(@Param("commentId") Long commentId);
 }

@@ -225,6 +225,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> getSuggestions(Long currentUserId, int limit) {
+        if (currentUserId == null) {
+            return userRepository.findAll(PageRequest.of(0, limit))
+                    .stream()
+                    .filter(u -> !Boolean.TRUE.equals(u.getIsSuspended()))
+                    .map(u -> authService.mapToUserResponse(u, null))
+                    .collect(Collectors.toList());
+        }
         return userRepository.findSuggestions(currentUserId, PageRequest.of(0, limit))
                 .stream()
                 .map(u -> authService.mapToUserResponse(u, currentUserId))

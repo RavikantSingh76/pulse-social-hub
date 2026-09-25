@@ -33,7 +33,7 @@ const CINEMATIC_SCENES = [
     id: 1,
     title: 'THE HOOK',
     duration: 3.5,
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4',
+    videoUrl: '/sample-videos/sample1.mp4',
     badge: '⚡ PARADIGM SHIFT',
     badgeColor: 'from-amber-500 via-rose-600 to-red-600',
     narration: 'Stop building social apps the old way.',
@@ -54,7 +54,7 @@ const CINEMATIC_SCENES = [
     id: 2,
     title: 'CORE ARCHITECTURE',
     duration: 5.5,
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4',
+    videoUrl: '/sample-videos/sample2.mp4',
     badge: '🚀 SUB-10MS LATENCY',
     badgeColor: 'from-cyan-500 via-blue-600 to-indigo-600',
     narration: 'Meet Pulse. Sub-10ms microservices engineered with Spring Boot 3 and React 18.',
@@ -78,7 +78,7 @@ const CINEMATIC_SCENES = [
     id: 3,
     title: 'LIVE INTERACTION',
     duration: 6.0,
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4',
+    videoUrl: '/sample-videos/sample3.mp4',
     badge: '📹 WEBRTC & 9:16 REELS',
     badgeColor: 'from-fuchsia-500 via-pink-600 to-rose-500',
     narration: 'Instant WebRTC video calls, interactive ephemeral stories, and vertical reels.',
@@ -101,7 +101,7 @@ const CINEMATIC_SCENES = [
     id: 4,
     title: 'SCALE & COMMUNITY',
     duration: 5.5,
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4',
+    videoUrl: '/sample-videos/sample1.mp4',
     badge: '🇮🇳 200+ VERIFIED LEADERS',
     badgeColor: 'from-emerald-500 via-teal-600 to-cyan-600',
     narration: 'Engineered for over 200 top technology leaders across Bengaluru and Silicon Valley.',
@@ -125,7 +125,7 @@ const CINEMATIC_SCENES = [
     id: 5,
     title: 'THE CALL TO ACTION',
     duration: 5.5,
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
     badge: '👑 JOIN PULSE SOCIAL HUB',
     badgeColor: 'from-cyan-500 via-indigo-600 to-fuchsia-500',
     narration: 'Experience the future of social networking. Follow @ravikant and Try Pulse now.',
@@ -393,8 +393,8 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
         onDoubleClick={handleDoubleTap}
       />
 
-      {/* Cinematic Dark Film Vignette & Contrast Grading */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-black/60 pointer-events-none" />
+      {/* Subtle Top Gradient for Status Contrast while keeping Video Bright */}
+      <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
 
       {/* Top Segmented Story / Reel Progress Timeline */}
       <div className="absolute top-3 inset-x-4 z-30 flex items-center space-x-1.5">
@@ -631,7 +631,7 @@ export default function CinematicReelPlayer({ onOpenComments, onOpenShare }) {
       </div>
 
       {/* Bottom Creator Card & User-Controlled Music Pill */}
-      <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/95 via-black/60 to-transparent text-white z-20 space-y-2">
+      <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white z-20 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img

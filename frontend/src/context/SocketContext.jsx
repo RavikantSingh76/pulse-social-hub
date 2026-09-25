@@ -41,65 +41,105 @@ export const SocketProvider = ({ children }) => {
       ? 'ws://localhost:8080/ws'
       : `${protocol}//${window.location.host}/ws`;
 
-    let socket;
-    let reconnectTimeout;
+    let socket = null;
+    let reconnectTimeout = null;
+    let isUnmounted = false;
 
     const connect = () => {
-      socket = new WebSocket(wsUrl);
-      socketRef.current = socket;
+      if (isUnmounted || !user?.id) return;
 
-      socket.onopen = () => {
-        // Register current user session
-        socket.send(JSON.stringify({ action: 'REGISTER', userId: user.id }));
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          const action = data.action;
-
-          if (action === 'ONLINE_STATUS') {
-            setOnlineUsers(prev => {
-              const next = new Set(prev);
-              if (data.isOnline) next.add(data.userId);
-              else next.delete(data.userId);
-              return next;
-            });
-          } else if (action === 'TYPING') {
-            setTypingUsers(prev => ({
-              ...prev,
-              [data.senderId]: data.isTyping
-            }));
-          } else if (action === 'NEW_NOTIFICATION') {
-            toast(data.message || 'You have a new notification!', { icon: '🔔' });
-          }
-
-          // Trigger registered callbacks
-          const callbacks = listenersRef.current.get(action);
-          if (callbacks) {
-            callbacks.forEach(cb => cb(data));
-          }
-        } catch (err) {
-          // Ignore non-JSON
+      // Close previous instance if open
+      if (socketRef.current) {
+        if (socketRef.current.readyState === WebSocket.OPEN) {
+          socketRef.current.close(1000, 'Reconnecting');
         }
-      };
+      }
 
-      socket.onclose = () => {
-        reconnectTimeout = setTimeout(() => {
-          if (user) connect();
-        }, 4000);
-      };
+      try {
+        socket = new WebSocket(wsUrl);
+        socketRef.current = socket;
 
-      socket.onerror = () => {
-        socket.close();
-      };
+        socket.onopen = () => {
+          if (isUnmounted) {
+            socket.close(1000, 'Unmounted');
+            return;
+          }
+          // Register current user session
+          socket.send(JSON.stringify({ action: 'REGISTER', userId: user.id }));
+        };
+
+        socket.onmessage = (event) => {
+          if (isUnmounted) return;
+          try {
+            const data = JSON.parse(event.data);
+            const action = data.action;
+
+            if (action === 'ONLINE_STATUS') {
+              setOnlineUsers(prev => {
+                const next = new Set(prev);
+                if (data.isOnline) next.add(data.userId);
+                else next.delete(data.userId);
+                return next;
+              });
+            } else if (action === 'TYPING') {
+              setTypingUsers(prev => ({
+                ...prev,
+                [data.senderId]: data.isTyping
+              }));
+            } else if (action === 'NEW_NOTIFICATION') {
+              toast(data.message || 'You have a new notification!', { icon: '🔔' });
+            }
+
+            // Trigger registered callbacks
+            const callbacks = listenersRef.current.get(action);
+            if (callbacks) {
+              callbacks.forEach(cb => {
+                try {
+                  cb(data);
+                } catch (e) {
+                  console.error('Socket callback error:', e);
+                }
+              });
+            }
+          } catch (err) {
+            // Ignore non-JSON
+          }
+        };
+
+        socket.onclose = (event) => {
+          if (isUnmounted) return;
+          // Only auto-reconnect if not closed normally (code 1000)
+          if (event.code !== 1000) {
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = setTimeout(() => {
+              if (!isUnmounted && user) connect();
+            }, 3500);
+          }
+        };
+
+        socket.onerror = () => {
+          // Native browser logs error; onclose will handle reconnect
+        };
+      } catch (e) {
+        console.warn('WebSocket connection init notice:', e);
+      }
     };
 
     connect();
 
     return () => {
+      isUnmounted = true;
       clearTimeout(reconnectTimeout);
-      if (socket) socket.close();
+      if (socket) {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close(1000, 'Component unmounted');
+        } else if (socket.readyState === WebSocket.CONNECTING) {
+          // Prevent browser 'WebSocket is closed before connection established' error
+          socket.onopen = () => {
+            socket.close(1000, 'Component unmounted');
+          };
+        }
+      }
     };
   }, [user]);
 

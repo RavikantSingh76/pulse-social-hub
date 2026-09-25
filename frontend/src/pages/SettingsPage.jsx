@@ -215,9 +215,12 @@ export default function SettingsPage() {
             )}
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Current Password</label>
+              <label htmlFor="settings-current-password" className="text-xs font-semibold text-slate-500 mb-1 block">Current Password</label>
               <input
+                id="settings-current-password"
+                name="currentPassword"
                 type="password"
+                autoComplete="current-password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500"
@@ -226,9 +229,12 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">New Password</label>
+              <label htmlFor="settings-new-password" className="text-xs font-semibold text-slate-500 mb-1 block">New Password</label>
               <input
+                id="settings-new-password"
+                name="newPassword"
                 type="password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500"
@@ -237,9 +243,12 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Confirm New Password</label>
+              <label htmlFor="settings-confirm-password" className="text-xs font-semibold text-slate-500 mb-1 block">Confirm New Password</label>
               <input
+                id="settings-confirm-password"
+                name="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary-500"

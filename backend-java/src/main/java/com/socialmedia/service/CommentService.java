@@ -6,11 +6,7 @@ import com.socialmedia.entity.CommentLike;
 import com.socialmedia.entity.Notification;
 import com.socialmedia.entity.Post;
 import com.socialmedia.entity.User;
-import com.socialmedia.repository.PostRepository;
-import com.socialmedia.repository.CommentLikeRepository;
-import com.socialmedia.repository.CommentRepository;
-import com.socialmedia.repository.NotificationRepository;
-import com.socialmedia.repository.UserRepository;
+import com.socialmedia.repository.*;
 import com.socialmedia.websocket.WebSocketConfig.ChatWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +33,12 @@ public class CommentService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private ReportRepository reportRepository;
+
+    @Autowired
+    private ReactionRepository reactionRepository;
 
     @Autowired
     private ChatWebSocketHandler wsHandler;
@@ -113,6 +115,20 @@ public class CommentService {
         if (!isAuthor && !isPostAuthor && !isAdmin) {
             throw new IllegalArgumentException("Unauthorized to delete this comment.");
         }
+
+        // Clean up child replies if any
+        if (comment.getReplies() != null && !comment.getReplies().isEmpty()) {
+            for (Comment reply : comment.getReplies()) {
+                reportRepository.deleteByReportedCommentId(reply.getId());
+                reactionRepository.deleteByCommentId(reply.getId());
+                commentLikeRepository.deleteByCommentId(reply.getId());
+            }
+        }
+
+        // Clean up this comment's associations
+        reportRepository.deleteByReportedCommentId(commentId);
+        reactionRepository.deleteByCommentId(commentId);
+        commentLikeRepository.deleteByCommentId(commentId);
 
         commentRepository.delete(comment);
     }

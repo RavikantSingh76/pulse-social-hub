@@ -82,7 +82,10 @@ export default function SearchPage() {
       <form onSubmit={handleSearchSubmit} className="relative">
         <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
+          id="search-query-input"
+          name="query"
           type="text"
+          autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search people, hashtags, videos, and posts..."

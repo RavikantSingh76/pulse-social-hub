@@ -204,29 +204,51 @@ export const StoryViewerModal = ({ stories, initialIndex = 0, onClose }) => {
           </div>
         </div>
 
-        {/* Story Media */}
-        <div className="w-full h-full flex items-center justify-center bg-black">
-          {currentStory.mediaType === 'VIDEO' ? (
+        {/* Story Media / Content */}
+        <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden relative">
+          {currentStory.mediaType === 'VIDEO' && currentStory.mediaUrl ? (
             <video
               ref={videoRef}
-              src={currentStory.mediaUrl.startsWith('http') ? currentStory.mediaUrl : `http://localhost:8080${currentStory.mediaUrl}`}
+              src={currentStory.mediaUrl.startsWith('http') || currentStory.mediaUrl.startsWith('blob:') || currentStory.mediaUrl.startsWith('data:')
+                ? currentStory.mediaUrl
+                : `http://localhost:8080${currentStory.mediaUrl}`}
               autoPlay
               muted={isMuted}
               playsInline
               className="w-full h-full object-cover"
             />
-          ) : (
+          ) : currentStory.mediaType === 'TEXT' || (!currentStory.mediaUrl && currentStory.caption) ? (
+            <div
+              className="w-full h-full flex items-center justify-center p-8 text-center select-none"
+              style={{
+                background: currentStory.bgGradient || 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%)',
+                color: currentStory.textColor || '#ffffff',
+                fontFamily: currentStory.fontFamily || 'inherit'
+              }}
+            >
+              <p className="text-xl sm:text-2xl font-black leading-relaxed max-w-xs drop-shadow-lg break-words">
+                {currentStory.caption}
+              </p>
+            </div>
+          ) : currentStory.mediaUrl ? (
             <img
-              src={currentStory.mediaUrl.startsWith('http') ? currentStory.mediaUrl : `http://localhost:8080${currentStory.mediaUrl}`}
+              src={currentStory.mediaUrl.startsWith('http') || currentStory.mediaUrl.startsWith('blob:') || currentStory.mediaUrl.startsWith('data:')
+                ? currentStory.mediaUrl
+                : `http://localhost:8080${currentStory.mediaUrl}`}
               alt="Story"
               className="w-full h-full object-cover"
             />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 text-white p-6 text-center">
+              <Sparkles className="w-10 h-10 text-cyan-400 mb-3 animate-pulse" />
+              <p className="text-sm font-bold text-slate-200">{currentStory.caption || 'Pulse Story'}</p>
+            </div>
           )}
         </div>
 
         {/* Story Bottom Controls: Caption, Views, Reply & Reactions */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-20 space-y-3">
-          {currentStory.caption && (
+          {currentStory.mediaType !== 'TEXT' && currentStory.mediaUrl && currentStory.caption && (
             <p className="text-xs text-white font-medium text-center drop-shadow-md line-clamp-2">
               {currentStory.caption}
             </p>
@@ -259,6 +281,8 @@ export const StoryViewerModal = ({ stories, initialIndex = 0, onClose }) => {
                 className="flex items-center space-x-2"
               >
                 <input
+                  id="story-reply-input"
+                  name="reply"
                   type="text"
                   placeholder={`Reply to ${currentStory.username}...`}
                   value={replyText}

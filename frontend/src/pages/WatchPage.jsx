@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { Tv, Play, Eye, Heart, MessageCircle, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl } from '../utils/mediaUtils';
 
 export const WatchPage = () => {
   const { user, isAuthenticated } = useAuth();
@@ -74,14 +75,32 @@ export const WatchPage = () => {
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800/80 overflow-hidden shadow-sm space-y-4">
           {/* Player Container */}
           <div className="relative bg-black aspect-video flex items-center justify-center">
-            <video
-              key={activeVideo.id}
-              src={activeVideo.media?.[0]?.url}
-              controls
-              autoPlay
-              playsInline
-              className="w-full h-full object-contain"
-            />
+            {(() => {
+              const rawUrl = activeVideo.media?.[0]?.url;
+              const ytId = getYouTubeId(rawUrl);
+              if (ytId) {
+                return (
+                  <iframe
+                    key={activeVideo.id}
+                    src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&controls=1&rel=0&playsinline=1`}
+                    title={activeVideo.title || 'Pulse Video'}
+                    className="w-full h-full object-contain border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; compute-pressure; web-share"
+                    allowFullScreen
+                  />
+                );
+              }
+              return (
+                <video
+                  key={activeVideo.id}
+                  src={resolveSafeMediaUrl(rawUrl)}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+              );
+            })()}
           </div>
 
           {/* Video Metadata & Creator */}
@@ -158,10 +177,15 @@ export const WatchPage = () => {
                 activeVideo?.id === v.id ? 'ring-2 ring-purple-500 border-transparent' : 'border-gray-100 dark:border-zinc-800/80'
               }`}
             >
-              <div className="relative aspect-video bg-black flex items-center justify-center">
-                <video src={v.media?.[0]?.url} className="w-full h-full object-cover opacity-90 group-hover:opacity-100" />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
-                  <div className="p-3 rounded-full bg-white/30 backdrop-blur-sm text-white group-hover:scale-110 transition-transform">
+              <div className="relative aspect-video bg-slate-950 flex items-center justify-center overflow-hidden">
+                <img
+                  src={getYouTubeThumbnail(v.media?.[0]?.url) || v.media?.[0]?.thumbnailUrl || v.avatarUrl || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=600&q=80'}
+                  alt={v.title || 'Video preview'}
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <div className="p-3 rounded-full bg-black/50 backdrop-blur-md text-white group-hover:scale-110 shadow-lg transition-transform">
                     <Play className="w-5 h-5 fill-white" />
                   </div>
                 </div>

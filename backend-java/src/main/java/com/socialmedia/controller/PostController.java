@@ -83,7 +83,7 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success(Map.of("posts", posts, "page", page, "limit", limit)));
     }
 
-    @GetMapping("/hashtags/{tag}")
+    @GetMapping(path = {"/hashtags/{tag}", "/hashtag/{tag}"})
     public ResponseEntity<ApiResponse<Map<String, Object>>> getHashtagPosts(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String tag,
@@ -143,6 +143,16 @@ public class PostController {
             @PathVariable Long id) {
 
         Map<String, Object> res = postService.toggleLike(userPrincipal.getId(), id);
+        return ResponseEntity.ok(ApiResponse.success(res));
+    }
+
+    @GetMapping(path = {"/{id}/reactions", "/{id}/reaction"})
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getPostReactions(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long id) {
+
+        Long currentUserId = userPrincipal != null ? userPrincipal.getId() : null;
+        Map<String, Object> res = postService.getPostReactionsSummary(currentUserId, id);
         return ResponseEntity.ok(ApiResponse.success(res));
     }
 

@@ -57,4 +57,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     long countByUserAndPostType(User user, Post.PostType postType);
     long countByPostType(Post.PostType postType);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "DELETE FROM post_hashtags WHERE post_id = :postId", nativeQuery = true)
+    void deletePostHashtags(@Param("postId") Long postId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Post p WHERE p.id = :postId")
+    void deletePostByIdDirect(@Param("postId") Long postId);
 }

@@ -443,4 +443,164 @@ public class Dtos {
         private long followersCount;
         private boolean isFollowed;
     }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class ShortVideoResponse {
+        private String videoId;
+        private String status;
+        private Double duration;
+        private Long fileSize;
+        private String fileUrl;
+        private String mimeType;
+        private Long userId;
+        private String username;
+        private String failureReason;
+        private String createdAt;
+        private String updatedAt;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class AudioTrackResponse {
+        private Long id;
+        private String title;
+        private String artist;
+        private String audioUrl;
+        private String coverUrl;
+        private Double duration;
+        private String sourceType;
+        private String licenseType;
+        private String copyrightOwner;
+        private Long usageCount;
+        private String genre;
+        private Long createdById;
+        private String createdByName;
+        private String createdAt;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class CreateAudioTrackRequest {
+        private String title;
+        private String artist;
+        private String audioUrl;
+        private String coverUrl;
+        private Double duration;
+        private String sourceType;
+        private String licenseType;
+        private String copyrightOwner;
+        private String genre;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class ReelResponse {
+        private Long id;
+        private String videoUrl;
+        private String thumbnailUrl;
+        private String caption;
+        private Double duration;
+        private AudioTrackResponse music;
+        private Double audioStartTime;
+        private Double audioEndTime;
+        private Integer originalAudioVolume;
+        private Integer musicVolume;
+        private Long views;
+        private Long likesCount;
+        private Long commentsCount;
+        private Long sharesCount;
+        private Boolean isLiked;
+        private Boolean isSaved;
+        private String status;
+        private String failureReason;
+        private UserResponse user;
+        private String createdAt;
+        private String updatedAt;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class CreateReelRequest {
+        private String caption;
+        private Long musicId;
+        private Double audioStartTime;
+        private Double audioEndTime;
+        private Integer originalAudioVolume;
+        private Integer musicVolume;
+        private String thumbnailUrl;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class UpdateReelRequest {
+        private String caption;
+        private String thumbnailUrl;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class ReelFeedResponse {
+        private List<ReelResponse> reels;
+        private int page;
+        private int limit;
+        private long total;
+        private boolean hasMore;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class CreatePlaylistRequest {
+        private String name;
+        private String description;
+        private String coverUrl;
+        private String visibility; // PUBLIC, PRIVATE
+        private List<String> videoIds;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class UpdatePlaylistRequest {
+        private String name;
+        private String description;
+        private String coverUrl;
+        private String visibility;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class AddPlaylistVideosRequest {
+        private String videoId;
+        private List<String> videoIds;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class ReorderPlaylistVideosRequest {
+        private List<String> videoIds;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class PlaylistVideoResponse {
+        private Long id;
+        private Long playlistId;
+        private String videoId;
+        private Integer position;
+        private String addedAt;
+        private String videoUrl;
+        private String thumbnailUrl;
+        private String caption;
+        private Double duration;
+        private Long views;
+        private Long likesCount;
+        private Long commentsCount;
+        private Long sharesCount;
+        private UserResponse user;
+        private AudioTrackResponse music;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class PlaylistResponse {
+        private Long id;
+        private Long userId;
+        private String name;
+        private String description;
+        private String coverUrl;
+        private String visibility;
+        private int videoCount;
+        private List<PlaylistVideoResponse> videos;
+        private UserResponse user;
+        private String createdAt;
+        private String updatedAt;
+    }
 }
+

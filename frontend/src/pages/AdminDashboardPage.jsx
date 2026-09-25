@@ -355,6 +355,8 @@ export const AdminDashboardPage = () => {
 
             <form onSubmit={handleSendWarning} className="space-y-4">
               <textarea
+                id="admin-warning-message"
+                name="warningMessage"
                 value={warningMessage}
                 onChange={(e) => setWarningMessage(e.target.value)}
                 placeholder="Describe reason for warning (e.g. inappropriate content, spamming, harassment)..."

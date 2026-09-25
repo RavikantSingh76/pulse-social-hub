@@ -8,7 +8,8 @@ export const ThemeToggle = ({ className = '' }) => {
   return (
     <button
       onClick={toggleTheme}
-      aria-label="Toggle Dark/Light Mode"
+      aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      title={theme === 'dark' ? 'Switch to Light Mode (Bright)' : 'Switch to Dark Mode'}
       className={`p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors ${className}`}
     >
       {theme === 'dark' ? (

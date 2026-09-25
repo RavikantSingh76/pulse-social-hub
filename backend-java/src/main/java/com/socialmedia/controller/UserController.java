@@ -152,7 +152,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<UserResponse>>> getSuggestions(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(value = "limit", defaultValue = "5") int limit) {
-        return ResponseEntity.ok(ApiResponse.success(userService.getSuggestions(userPrincipal.getId(), limit)));
+        Long currentUserId = userPrincipal != null ? userPrincipal.getId() : null;
+        return ResponseEntity.ok(ApiResponse.success(userService.getSuggestions(currentUserId, limit)));
     }
 
     @PostMapping("/{id}/block")

@@ -10,6 +10,7 @@ import PostViewerModal from '../components/profile/PostViewerModal';
 import StoryHighlights from '../components/profile/StoryHighlights';
 import CreatorAnalyticsTab from '../components/profile/CreatorAnalyticsTab';
 import { soundFx } from '../utils/audioEffects';
+import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl } from '../utils/mediaUtils';
 import {
   Grid,
   Film,
@@ -32,7 +33,8 @@ import {
   Heart,
   Layers,
   FolderPlus,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -133,6 +135,23 @@ export const ProfilePage = () => {
 
   const handlePostUpdate = (postId, updates) => {
     setPosts(prev => prev.map(p => (p.id === postId ? { ...p, ...updates } : p)));
+  };
+
+  const handlePostDelete = (postId) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+    setViewerModal({ isOpen: false, initialIndex: 0 });
+    setProfile(prev => prev ? { ...prev, postsCount: Math.max(0, (prev.postsCount || 1) - 1) } : prev);
+  };
+
+  const handleDirectDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
+    try {
+      await postService.deletePost(postId);
+      toast.success('Post deleted successfully');
+      handlePostDelete(postId);
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete post');
+    }
   };
 
   if (loading) {
@@ -446,13 +465,22 @@ export const ProfilePage = () => {
               >
                 {/* Media Image / Video Poster */}
                 {isVideo && mediaUrl ? (
-                  <video
-                    src={mediaUrl}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
+                  getYouTubeId(mediaUrl) ? (
+                    <img
+                      src={getYouTubeThumbnail(mediaUrl)}
+                      alt={post.caption || 'YouTube Video'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <video
+                      src={resolveSafeMediaUrl(mediaUrl)}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  )
                 ) : mediaUrl ? (
                   <img
                     src={mediaUrl}
@@ -480,6 +508,21 @@ export const ProfilePage = () => {
                   ) : null}
                 </div>
 
+                {/* Direct Delete button on hover for own profile */}
+                {Boolean(profile?.isSelf || (currentUser && currentUser.username === username)) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDirectDeletePost(post.id);
+                    }}
+                    className="absolute top-2 left-2 z-30 p-1.5 rounded-xl bg-black/70 hover:bg-rose-600 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer shadow-lg hover:scale-110"
+                    title="Delete Post"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
                 {/* Dark Hover Overlay with Likes and Comments */}
                 <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white z-20 pointer-events-none">
                   <div className="flex items-center gap-1.5 font-extrabold text-xs">
@@ -504,6 +547,7 @@ export const ProfilePage = () => {
         posts={posts}
         initialIndex={viewerModal.initialIndex}
         onPostUpdate={handlePostUpdate}
+        onPostDelete={handlePostDelete}
       />
 
       {/* Edit Profile Modal */}

@@ -18,7 +18,8 @@ import {
   User,
   ShieldAlert,
   LogOut,
-  Sparkles
+  Sparkles,
+  ListVideo
 } from 'lucide-react';
 
 import { PulseLogo } from '../common/PulseLogo';
@@ -32,6 +33,7 @@ export const Sidebar = ({ onOpenCreatePost }) => {
     { to: '/search', label: 'Search', icon: Search },
     { to: '/explore', label: 'Explore', icon: Compass },
     { to: '/reels', label: 'Reels', icon: Film },
+    { to: '/playlists', label: 'Playlists', icon: ListVideo },
     { to: '/studio', label: 'Video Studio', icon: Sparkles, highlight: true },
     { to: '/watch', label: 'Watch', icon: Tv },
     { to: '/creator/studio', label: 'Creator Studio', icon: BarChart3 },

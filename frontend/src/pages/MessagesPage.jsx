@@ -388,6 +388,8 @@ export const MessagesPage = () => {
           {showChatSearch && (
             <form onSubmit={handleSearchInChat} className="p-2.5 bg-slate-100 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
               <input
+                id="chat-search-input"
+                name="chatSearch"
                 type="text"
                 value={chatSearchQuery}
                 onChange={(e) => setChatSearchQuery(e.target.value)}
@@ -504,6 +506,8 @@ export const MessagesPage = () => {
               <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
 
               <input
+                id="chat-message-input"
+                name="message"
                 type="text"
                 placeholder="Type a message..."
                 value={messageText}

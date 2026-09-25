@@ -69,8 +69,10 @@ export const postService = {
   markNotInterested: (id, reason = 'Not relevant') => api.post(`/posts/${id}/not-interested?reason=${encodeURIComponent(reason)}`),
   getComments: (postId) => api.get(`/posts/${postId}/comments`),
   addComment: (postId, data) => api.post(`/posts/${postId}/comments`, data),
-  deleteComment: (postId, commentId) => api.delete(`/posts/${postId}/comments/${commentId}`),
-  reportPost: (id, data) => api.post(`/posts/${id}/report`, data),
+  createComment: (postId, data) => api.post(`/posts/${postId}/comments`, data),
+  deleteComment: (postId, commentId) => api.delete(`/comments/${commentId}`),
+  toggleCommentLike: (commentId) => api.post(`/comments/${commentId}/like`),
+  reportPost: (id, data) => api.post(`/posts/${id}/report`),
   getCollections: () => api.get('/posts/collections'),
   createCollection: (data) => api.post('/posts/collections', data),
   deleteCollection: (id) => api.delete(`/posts/collections/${id}`)
@@ -146,15 +148,52 @@ export const notificationService = {
   updatePreferences: (data) => api.put('/notifications/preferences', data)
 };
 
+export const reelService = {
+  getReels: (page = 1, limit = 10) => api.get(`/reels?page=${page}&limit=${limit}`),
+  getReel: (id) => api.get(`/reels/${id}`),
+  createReel: (formData, onUploadProgress) => api.post('/reels', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress
+  }),
+  updateReel: (id, data) => api.put(`/reels/${id}`, data),
+  deleteReel: (id) => api.delete(`/reels/${id}`),
+  recordView: (id) => api.post(`/reels/${id}/view`),
+  toggleLike: (id) => api.post(`/reels/${id}/like`)
+};
+
+export const audioService = {
+  getAudioList: (page = 1, limit = 20) => api.get(`/audio?page=${page}&limit=${limit}`),
+  searchAudio: (query, page = 1, limit = 20) => api.get(`/audio/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`),
+  getTrendingAudio: (page = 1, limit = 20) => api.get(`/audio/trending?page=${page}&limit=${limit}`),
+  getRecentAudio: (page = 1, limit = 20) => api.get(`/audio/recent?page=${page}&limit=${limit}`),
+  getAudio: (id) => api.get(`/audio/${id}`),
+  uploadAudio: (formData) => api.post('/audio', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteAudio: (id) => api.delete(`/audio/${id}`)
+};
+
+export const playlistService = {
+  getPlaylists: (userId, page = 1, limit = 20) => api.get(`/playlists?${userId ? `user_id=${userId}&` : ''}page=${page}&limit=${limit}`),
+  getPlaylist: (id) => api.get(`/playlists/${id}`),
+  createPlaylist: (data) => api.post('/playlists', data),
+  updatePlaylist: (id, data) => api.put(`/playlists/${id}`, data),
+  deletePlaylist: (id) => api.delete(`/playlists/${id}`),
+  addVideos: (playlistId, videoIds, videoId) => api.post(`/playlists/${playlistId}/videos`, { videoIds, videoId }),
+  removeVideo: (playlistId, videoId) => api.delete(`/playlists/${playlistId}/videos/${videoId}`),
+  reorderVideos: (playlistId, videoIds) => api.put(`/playlists/${playlistId}/videos/reorder`, { videoIds })
+};
+
 export const adminService = {
   getStats: () => api.get('/admin/stats'),
   listUsers: (page = 1, limit = 30) => api.get(`/admin/users?page=${page}&limit=${limit}`),
-  toggleUserStatus: (id) => api.put(`/admin/users/${id}/toggle-status`),
-  verifyUser: (id, verified = true) => api.put(`/admin/users/${id}/verify?verified=${verified}`),
-  warnUser: (id, message) => api.post(`/admin/users/${id}/warn`, { message }),
   listPosts: (page = 1, limit = 30) => api.get(`/admin/posts?page=${page}&limit=${limit}`),
   listReports: (status = 'PENDING') => api.get(`/admin/reports?status=${status}`),
-  resolveReport: (id, status) => api.put(`/admin/reports/${id}/resolve`, { status })
+  toggleUserStatus: (userId) => api.put(`/admin/users/${userId}/toggle-status`),
+  verifyUser: (userId, isVerified) => api.put(`/admin/users/${userId}/verify`, { isVerified }),
+  warnUser: (userId, message) => api.post(`/admin/users/${userId}/warn`, { message }),
+  resolveReport: (reportId, status) => api.put(`/admin/reports/${reportId}`, { status }),
+  deletePost: (postId) => api.delete(`/admin/posts/${postId}`)
 };
 
 export default api;

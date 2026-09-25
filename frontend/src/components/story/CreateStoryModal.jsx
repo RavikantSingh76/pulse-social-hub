@@ -91,6 +91,8 @@ export const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
         />
 
         <input
+          id="story-caption-input"
+          name="caption"
           type="text"
           placeholder="Add a caption to your story..."
           value={caption}

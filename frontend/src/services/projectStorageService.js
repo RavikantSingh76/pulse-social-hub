@@ -1,6 +1,6 @@
 // Project Storage, Templates & Technical Interview Demo Project Service
 
-const STORAGE_KEY = 'pulse_studio_projects_v2';
+const STORAGE_KEY = 'pulse_studio_projects_v4';
 const ACTIVE_PROJECT_KEY = 'pulse_studio_active_project_id';
 
 export const REEL_TEMPLATES = [
@@ -15,7 +15,7 @@ export const REEL_TEMPLATES = [
       {
         id: 'c1',
         title: 'The Hook',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4',
+        url: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
         mediaType: 'VIDEO',
         duration: 3.5,
         trimStart: 0,
@@ -24,12 +24,13 @@ export const REEL_TEMPLATES = [
         scale: 100,
         rotation: 0,
         opacity: 100,
+        volume: 100,
         transition: 'fade'
       },
       {
         id: 'c2',
         title: 'Core Engine',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4',
+        url: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
         mediaType: 'VIDEO',
         duration: 5.0,
         trimStart: 0,
@@ -38,12 +39,13 @@ export const REEL_TEMPLATES = [
         scale: 100,
         rotation: 0,
         opacity: 100,
+        volume: 100,
         transition: 'slide-left'
       },
       {
         id: 'c3',
         title: 'High Concurrency',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4',
+        url: 'https://media.w3.org/2010/05/video/movie_300.mp4',
         mediaType: 'VIDEO',
         duration: 4.5,
         trimStart: 0,
@@ -52,12 +54,13 @@ export const REEL_TEMPLATES = [
         scale: 100,
         rotation: 0,
         opacity: 100,
+        volume: 100,
         transition: 'zoom'
       },
       {
         id: 'c4',
         title: 'Join Community',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4',
+        url: '/sample-videos/sample1.mp4',
         mediaType: 'VIDEO',
         duration: 4.0,
         trimStart: 0,
@@ -66,14 +69,15 @@ export const REEL_TEMPLATES = [
         scale: 100,
         rotation: 0,
         opacity: 100,
+        volume: 100,
         transition: 'dissolve'
       }
     ],
     textLayers: [
-      { id: 't1', text: 'Stop Building Slow Apps ⚡', startTime: 0.5, duration: 2.8, color: '#f59e0b', fontSize: 32, isBold: true, hasBackground: true },
-      { id: 't2', text: 'Sub-10ms Microservices 🚀', startTime: 4.0, duration: 4.2, color: '#06b6d4', fontSize: 30, isBold: true, hasBackground: true },
-      { id: 't3', text: '50k Req/Sec Throughput 🔥', startTime: 9.0, duration: 3.8, color: '#10b981', fontSize: 32, isBold: true, hasBackground: true },
-      { id: 't4', text: 'Try Pulse Social Hub Today 👑', startTime: 13.5, duration: 3.5, color: '#ec4899', fontSize: 32, isBold: true, hasBackground: true }
+      { id: 't1', text: '⚡ STOP BUILDING SLOW APPS\nModern Cloud Native Stack', startTime: 0.5, duration: 2.8, color: '#f59e0b', fontSize: 22, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'top', posY: 10 },
+      { id: 't2', text: '🚀 Sub-10ms Microservices\nHigh-Throughput Reactive APIs', startTime: 4.0, duration: 4.2, color: '#06b6d4', fontSize: 20, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'bottom', posY: -10 },
+      { id: 't3', text: '🔥 50k Req/Sec Throughput\nZero-Downtime Resilience', startTime: 9.0, duration: 3.8, color: '#10b981', fontSize: 20, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'bottom', posY: -10 },
+      { id: 't4', text: '👑 Try Pulse Social Hub\nBuild Scalable Apps Today', startTime: 13.5, duration: 3.5, color: '#ec4899', fontSize: 22, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'center', posY: 0 }
     ],
     backgroundMusic: {
       id: 'm1',
@@ -96,36 +100,38 @@ export const REEL_TEMPLATES = [
       {
         id: 'p1',
         title: 'Developer Intro',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4',
+        url: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
         mediaType: 'VIDEO',
         duration: 4.0,
         trimStart: 0,
         trimEnd: 4.0,
         filter: 'cinematic',
+        volume: 100,
         scale: 100
       },
       {
         id: 'p2',
         title: 'Project Architecture',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4',
+        url: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
         mediaType: 'VIDEO',
-        duration: 5.0,
+        duration: 4.5,
         trimStart: 0,
-        trimEnd: 5.0,
+        trimEnd: 4.5,
         filter: 'cyberpunk',
+        volume: 100,
         scale: 100
       }
     ],
     textLayers: [
-      { id: 'pt1', text: 'Ravikant Singh · Full-Stack Architect', startTime: 0.5, duration: 3.2, color: '#38bdf8', fontSize: 28, isBold: true, hasBackground: true },
-      { id: 'pt2', text: 'Spring Boot 3 + WebRTC + React 18', startTime: 4.5, duration: 4.0, color: '#a855f7', fontSize: 26, isBold: true, hasBackground: true }
+      { id: 'tp1', text: '💻 Full-Stack Software Engineer\nDesigning Distributed Systems', startTime: 0.5, duration: 3.5, color: '#38bdf8', fontSize: 22, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'top', posY: 10 },
+      { id: 'tp2', text: '🛡️ Spring Boot 3 + React 18\nKafka • Redis • WebSocket', startTime: 4.5, duration: 3.5, color: '#34d399', fontSize: 20, isBold: true, hasBackground: true, textAlign: 'center', verticalAlign: 'bottom', posY: -10 }
     ],
     backgroundMusic: {
       id: 'm2',
-      title: 'Deep Focus Coding Flow',
-      artist: 'Aarav Sharma Beats',
+      title: 'Deep Focus Coding Lofi',
+      artist: 'Pulse Chill Beats',
       audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-hollidays-690.mp3',
-      volume: 80,
+      volume: 70,
       startTime: 0,
       autoDucking: true
     }
@@ -141,19 +147,21 @@ export const REEL_TEMPLATES = [
       {
         id: 'tr1',
         title: 'Marine Drive Sunset',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4',
+        url: '/sample-videos/sample2.mp4',
         mediaType: 'VIDEO',
         duration: 4.5,
         filter: 'warm',
+        volume: 100,
         scale: 100
       },
       {
         id: 'tr2',
         title: 'Ocean Waves',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-waves-crashing-on-a-sandy-beach-42407-large.mp4',
+        url: '/sample-videos/sample3.mp4',
         mediaType: 'VIDEO',
         duration: 4.5,
         filter: 'cool',
+        volume: 100,
         scale: 100
       }
     ],
@@ -254,7 +262,7 @@ export const projectStorageService = {
         {
           id: 'clip_demo_1',
           title: '01. The Problem Hook',
-          url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4',
+          url: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
           mediaType: 'VIDEO',
           duration: 3.5,
           trimStart: 0,
@@ -263,12 +271,13 @@ export const projectStorageService = {
           scale: 105,
           rotation: 0,
           opacity: 100,
+          volume: 100,
           transition: 'fade'
         },
         {
           id: 'clip_demo_2',
           title: '02. Spring Boot 3 Engine',
-          url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4',
+          url: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
           mediaType: 'VIDEO',
           duration: 4.5,
           trimStart: 0,
@@ -277,12 +286,13 @@ export const projectStorageService = {
           scale: 100,
           rotation: 0,
           opacity: 100,
+          volume: 100,
           transition: 'slide-left'
         },
         {
           id: 'clip_demo_3',
           title: '03. WebRTC & Reels Experience',
-          url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-woman-recording-a-dance-with-her-phone-41489-large.mp4',
+          url: 'https://media.w3.org/2010/05/video/movie_300.mp4',
           mediaType: 'VIDEO',
           duration: 4.0,
           trimStart: 0,
@@ -291,12 +301,13 @@ export const projectStorageService = {
           scale: 105,
           rotation: 0,
           opacity: 100,
+          volume: 100,
           transition: 'zoom'
         },
         {
           id: 'clip_demo_4',
           title: '04. High Concurrency Scaling',
-          url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4',
+          url: '/sample-videos/sample1.mp4',
           mediaType: 'VIDEO',
           duration: 4.5,
           trimStart: 0,
@@ -305,12 +316,13 @@ export const projectStorageService = {
           scale: 100,
           rotation: 0,
           opacity: 100,
+          volume: 100,
           transition: 'slide-right'
         },
         {
           id: 'clip_demo_5',
           title: '05. Community & Final Call to Action',
-          url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4',
+          url: '/sample-videos/sample2.mp4',
           mediaType: 'VIDEO',
           duration: 4.0,
           trimStart: 0,
@@ -319,15 +331,87 @@ export const projectStorageService = {
           scale: 100,
           rotation: 0,
           opacity: 100,
+          volume: 100,
           transition: 'dissolve'
         }
       ],
+
       textLayers: [
-        { id: 'txt_demo_1', text: 'Stop Building Social Apps The Old Way ⚡', startTime: 0.5, duration: 2.8, color: '#facc15', fontSize: 30, isBold: true, hasBackground: true, animation: 'pop' },
-        { id: 'txt_demo_2', text: 'Sub-10ms Microservices with Spring Boot 3 & React 🚀', startTime: 4.0, duration: 3.8, color: '#38bdf8', fontSize: 28, isBold: true, hasBackground: true, animation: 'typewriter' },
-        { id: 'txt_demo_3', text: 'Instant WebRTC Video Calls & 9:16 Reels 🎥', startTime: 8.5, duration: 3.2, color: '#f472b6', fontSize: 28, isBold: true, hasBackground: true, animation: 'slide' },
-        { id: 'txt_demo_4', text: 'Scaled with HikariCP & Kafka for 50,000 req/sec 🛡️', startTime: 12.5, duration: 3.8, color: '#34d399', fontSize: 28, isBold: true, hasBackground: true, animation: 'glow' },
-        { id: 'txt_demo_5', text: 'Follow @ravikant & Join Pulse Today 👑', startTime: 17.0, duration: 3.2, color: '#e879f9', fontSize: 30, isBold: true, hasBackground: true, animation: 'bounce' }
+        {
+          id: 'txt_demo_1',
+          text: '⚡ STOP BUILDING THE OLD WAY\nNext-Gen Distributed Architecture',
+          startTime: 0.5,
+          duration: 2.8,
+          color: '#facc15',
+          fontSize: 22,
+          isBold: true,
+          hasBackground: true,
+          animation: 'pop',
+          textAlign: 'center',
+          verticalAlign: 'top',
+          posX: 0,
+          posY: 10
+        },
+        {
+          id: 'txt_demo_2',
+          text: '🚀 Sub-10ms Microservices Engine\nSpring Boot 3 + React 18 + Kafka',
+          startTime: 4.0,
+          duration: 3.8,
+          color: '#38bdf8',
+          fontSize: 20,
+          isBold: true,
+          hasBackground: true,
+          animation: 'glow',
+          textAlign: 'center',
+          verticalAlign: 'bottom',
+          posX: 0,
+          posY: -10
+        },
+        {
+          id: 'txt_demo_3',
+          text: '🎥 Real-Time WebRTC Video Calls\nZero-Lag 9:16 Short Reels Feed',
+          startTime: 8.5,
+          duration: 3.2,
+          color: '#f472b6',
+          fontSize: 21,
+          isBold: true,
+          hasBackground: true,
+          animation: 'slide',
+          textAlign: 'center',
+          verticalAlign: 'center',
+          posX: 0,
+          posY: 0
+        },
+        {
+          id: 'txt_demo_4',
+          text: '🛡️ 50,000 Req / Sec High Concurrency\nHikariCP Connection Pooling & Caching',
+          startTime: 12.5,
+          duration: 3.8,
+          color: '#34d399',
+          fontSize: 20,
+          isBold: true,
+          hasBackground: true,
+          animation: 'glow',
+          textAlign: 'center',
+          verticalAlign: 'bottom',
+          posX: 0,
+          posY: -10
+        },
+        {
+          id: 'txt_demo_5',
+          text: '👑 Join Pulse Social Platform\nFollow @ravikant for Source Code',
+          startTime: 17.0,
+          duration: 3.2,
+          color: '#e879f9',
+          fontSize: 22,
+          isBold: true,
+          hasBackground: true,
+          animation: 'pop',
+          textAlign: 'center',
+          verticalAlign: 'center',
+          posX: 0,
+          posY: 0
+        }
       ],
       backgroundMusic: {
         id: 'm1',

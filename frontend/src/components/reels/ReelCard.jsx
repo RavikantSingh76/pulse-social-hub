@@ -19,7 +19,8 @@ import {
   Flame
 } from 'lucide-react';
 import { soundFx, REELS_AUDIO_TRACKS } from '../../utils/audioEffects';
-import { postService, userService } from '../../services/services';
+import { LOCAL_SAMPLE_VIDEOS, resolveSafeMediaUrl, getYouTubeId } from '../../utils/mediaUtils';
+import { postService, userService, reelService } from '../../services/services';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { PulseLogo } from '../common/PulseLogo';
@@ -27,25 +28,26 @@ import toast from 'react-hot-toast';
 
 export default function ReelCard({
   reel,
-  index,
-  isActive,
-  isMuted,
+  isActive = false,
+  isMuted = true,
   onToggleMute,
-  onOpenComments,
-  onOpenShare,
-  onOpenAudioModal
+  index = 0,
+  onOpenComments = () => {},
+  onOpenShare = () => {},
+  onOpenAudioModal = () => {}
 }) {
-  const { user } = useAuth();
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
   const containerRef = useRef(null);
+  const { user } = useAuth();
 
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isBuffering, setIsBuffering] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [isLiked, setIsLiked] = useState(reel.isLiked || false);
-  const [likesCount, setLikesCount] = useState(reel.likesCount || 0);
-  const [isSaved, setIsSaved] = useState(reel.isSaved || false);
+  const [isLiked, setIsLiked] = useState(reel.isLiked || reel.liked || false);
+  const [likesCount, setLikesCount] = useState(reel.likesCount ?? reel.likes ?? 0);
+  const [isSaved, setIsSaved] = useState(reel.isSaved || reel.saved || false);
   const [isFollowing, setIsFollowing] = useState(reel.isFollowing || false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [heartPop, setHeartPop] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -53,9 +55,47 @@ export default function ReelCard({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  const videoUrl = reel.media && reel.media.length > 0
+  // Author & Metadata Normalization
+  const authorUsername = reel.username || reel.user?.username || reel.creatorUsername || 'creator';
+  const authorDisplayName = reel.displayName || reel.user?.displayName || reel.creatorName || authorUsername;
+  const authorAvatarUrl = reel.avatarUrl || reel.user?.avatarUrl || reel.creatorAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${authorUsername}`;
+  const authorIsVerified = Boolean(reel.isVerified ?? reel.user?.isVerified);
+  const authorId = reel.authorId || reel.userId || reel.user?.id;
+  const isOwner = user && authorId && (user.id === authorId || user.username === authorUsername);
+
+  useEffect(() => {
+    setIsLiked(reel.isLiked || reel.liked || false);
+    setLikesCount(reel.likesCount ?? reel.likes ?? 0);
+    setIsSaved(reel.isSaved || reel.saved || false);
+    setIsFollowing(reel.isFollowing || false);
+  }, [reel]);
+
+  const BACKUP_REEL_STREAMS = [
+    ...LOCAL_SAMPLE_VIDEOS,
+    'https://media.w3.org/2010/05/sintel/trailer.mp4',
+    'https://media.w3.org/2010/05/bunny/trailer.mp4'
+  ];
+
+  const rawVideoUrl = reel.media && reel.media.length > 0
     ? (reel.media[0].url.startsWith('http') ? reel.media[0].url : `http://localhost:8080${reel.media[0].url}`)
     : (reel.videoUrl || '');
+
+  const sanitizeReelUrl = (url, idx) => {
+    if (!url || url.includes('mixkit.co') || url.includes('commondatastorage.googleapis.com')) {
+      return BACKUP_REEL_STREAMS[(idx || 0) % BACKUP_REEL_STREAMS.length];
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+    return `http://localhost:8080${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const [activeVideoUrl, setActiveVideoUrl] = useState(() => sanitizeReelUrl(rawVideoUrl, index));
+
+  useEffect(() => {
+    setActiveVideoUrl(sanitizeReelUrl(rawVideoUrl, index));
+    setHasError(false);
+  }, [rawVideoUrl, index]);
 
   const getYouTubeId = (url) => {
     if (!url) return null;
@@ -63,59 +103,119 @@ export default function ReelCard({
     return match ? match[1] : null;
   };
 
-  const youtubeId = getYouTubeId(videoUrl);
+  const youtubeId = getYouTubeId(activeVideoUrl);
 
-  const audioTrack = REELS_AUDIO_TRACKS[index % REELS_AUDIO_TRACKS.length];
-  const isOwner = user && user.id === reel.userId;
+  const effectiveAudioTrack = reel.audioTrack || reel.music || {
+    title: reel.audioTitle || reel.audioName || 'Original Soundtrack',
+    artist: reel.audioArtist || authorDisplayName,
+    audioUrl: reel.audioUrl || ''
+  };
+
+  // Resolve active audio url with full absolute origin
+  const rawAudioUrl = effectiveAudioTrack?.audioUrl || '';
+  const activeAudioUrl = rawAudioUrl
+    ? (rawAudioUrl.startsWith('http') || rawAudioUrl.startsWith('blob:') || rawAudioUrl.startsWith('data:')
+        ? rawAudioUrl
+        : `http://localhost:8080${rawAudioUrl}`)
+    : '';
+
+  const audioStartTime = reel.audioStartTime || 0;
+  const audioEndTime = reel.audioEndTime || (audioStartTime + (reel.duration || 20));
+  const musicVolumeFraction = (reel.musicVolume !== undefined ? reel.musicVolume : 80) / 100;
+  const originalVolumeFraction = (reel.originalAudioVolume !== undefined ? reel.originalAudioVolume : 100) / 100;
 
   // Handle active/inactive playback via IntersectionObserver
   useEffect(() => {
     const video = videoRef.current;
+    const audio = audioRef.current;
     if (!video) return;
 
     if (isActive) {
       video.currentTime = 0;
+      video.muted = isMuted;
+      video.volume = originalVolumeFraction;
+
+      if (audio && activeAudioUrl) {
+        audio.currentTime = audioStartTime;
+        audio.muted = isMuted;
+        audio.volume = musicVolumeFraction;
+      }
+
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
             setIsPlaying(true);
             setIsBuffering(false);
+            setHasError(false);
+            if (audio && activeAudioUrl) {
+              audio.play().catch(() => {});
+            }
           })
           .catch(() => {
-            setIsPlaying(false);
+            // If unmuted autoplay blocked, fallback to muted autoplay
+            video.muted = true;
+            video.play().then(() => {
+              setIsPlaying(true);
+              setIsBuffering(false);
+            }).catch(() => {
+              setIsPlaying(false);
+            });
           });
       }
     } else {
       video.pause();
+      if (audio) audio.pause();
       setIsPlaying(false);
     }
-  }, [isActive]);
+  }, [isActive, activeVideoUrl, activeAudioUrl]);
 
-  // Sync mute state
+  // Sync mute and volume state
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
+      videoRef.current.volume = originalVolumeFraction;
     }
-  }, [isMuted]);
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+      audioRef.current.volume = musicVolumeFraction;
+    }
+  }, [isMuted, originalVolumeFraction, musicVolumeFraction]);
 
-  // Video progress tracking
+  // Video progress tracking & audio synchronization
   const handleTimeUpdate = () => {
-    if (videoRef.current && videoRef.current.duration) {
-      const current = videoRef.current.currentTime;
-      const duration = videoRef.current.duration;
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (video && video.duration) {
+      const current = video.currentTime;
+      const duration = video.duration;
       setProgress((current / duration) * 100);
+
+      // Keep background music tightly in sync with video
+      if (audio && activeAudioUrl && !audio.paused) {
+        const segLen = Math.max(1, audioEndTime - audioStartTime);
+        const expectedTime = audioStartTime + (current % segLen);
+        if (Math.abs(audio.currentTime - expectedTime) > 0.5) {
+          audio.currentTime = expectedTime;
+        }
+      }
     }
   };
 
   const handleVideoClick = () => {
-    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video) return;
     if (isPlaying) {
-      videoRef.current.pause();
+      video.pause();
+      if (audio) audio.pause();
       setIsPlaying(false);
       setShowPlayPauseFeedback('pause');
     } else {
-      videoRef.current.play().catch(() => {});
+      video.play().catch(() => {});
+      if (audio && activeAudioUrl) {
+        audio.play().catch(() => {});
+      }
       setIsPlaying(true);
       setShowPlayPauseFeedback('play');
     }
@@ -139,9 +239,19 @@ export default function ReelCard({
     setLikesCount(prev => (nextState ? prev + 1 : Math.max(0, prev - 1)));
 
     try {
-      await postService.toggleReaction(reel.id, 'LOVE');
+      if (reel.sourceType === 'DEDICATED_REEL') {
+        await reelService.toggleLike(reel.id);
+      } else if (reel.sourceType === 'POST_VIDEO') {
+        await postService.toggleReaction(reel.id, 'LOVE');
+      } else {
+        try {
+          await reelService.toggleLike(reel.id);
+        } catch {
+          await postService.toggleReaction(reel.id, 'LOVE');
+        }
+      }
     } catch (err) {
-      console.error(err);
+      console.warn('Like toggle sync:', err);
     }
   };
 
@@ -152,23 +262,26 @@ export default function ReelCard({
     toast.success(nextState ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks');
 
     try {
-      await postService.toggleSave(reel.id);
+      if (reel.sourceType === 'POST_VIDEO' || typeof reel.id === 'number') {
+        await postService.toggleSave(reel.id);
+      }
     } catch (err) {
-      console.error(err);
+      console.warn('Bookmark toggle sync:', err);
     }
   };
 
   const handleToggleFollow = async () => {
-    if (!reel.userId) return;
     soundFx.playChimeCTA();
     const nextState = !isFollowing;
     setIsFollowing(nextState);
-    toast.success(nextState ? `Following @${reel.username}! 🎉` : `Unfollowed @${reel.username}`);
+    toast.success(nextState ? `Following @${authorUsername}! 🎉` : `Unfollowed @${authorUsername}`);
 
-    try {
-      await userService.followUser(reel.userId);
-    } catch (err) {
-      console.error(err);
+    if (authorId) {
+      try {
+        await userService.followUser(authorId);
+      } catch (err) {
+        console.warn('Follow sync:', err);
+      }
     }
   };
 
@@ -187,32 +300,40 @@ export default function ReelCard({
     <div
       ref={containerRef}
       data-reel-index={index}
-      className="reel-item relative w-full h-[calc(100vh-8.5rem)] md:h-[720px] max-w-[420px] mx-auto snap-start bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-800/90 select-none flex items-center justify-center my-4 group"
+      className="reel-item relative w-full h-[calc(100vh-8.5rem)] md:h-[720px] max-w-[420px] mx-auto snap-center snap-always shrink-0 bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-800/90 select-none flex items-center justify-center my-2 group"
     >
       {/* 1. Video Player Element */}
-      {youtubeId ? (
+      {(youtubeId && (typeof navigator === 'undefined' || navigator.onLine)) ? (
         <div className="w-full h-full relative overflow-hidden bg-black flex items-center justify-center">
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=${isActive ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&playsinline=1`}
             title={reel.caption || 'Pulse Reel'}
             className="w-full h-full object-cover scale-[1.03] border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; compute-pressure; web-share"
             allowFullScreen
           />
         </div>
-      ) : videoUrl && !hasError ? (
+      ) : activeVideoUrl && !hasError ? (
         <video
           ref={videoRef}
-          src={videoUrl}
+          src={activeVideoUrl}
           className="w-full h-full object-cover cursor-pointer"
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           muted={isMuted}
           onWaiting={() => setIsBuffering(true)}
           onPlaying={() => setIsBuffering(false)}
           onCanPlay={() => setIsBuffering(false)}
-          onError={() => setHasError(true)}
+          onError={() => {
+            const nextStream = BACKUP_REEL_STREAMS[(index + 1) % BACKUP_REEL_STREAMS.length];
+            setActiveVideoUrl(nextStream);
+            setHasError(false);
+            if (videoRef.current) {
+              videoRef.current.load();
+              if (isActive) videoRef.current.play().catch(() => {});
+            }
+          }}
           onTimeUpdate={handleTimeUpdate}
           onClick={handleVideoClick}
           onDoubleClick={handleDoubleTap}
@@ -243,6 +364,18 @@ export default function ReelCard({
         </div>
       )}
 
+      {/* Synchronized Background Music Audio Element */}
+      {activeAudioUrl && (
+        <audio
+          ref={audioRef}
+          src={activeAudioUrl}
+          preload="auto"
+          loop
+          playsInline
+          className="hidden"
+        />
+      )}
+
       {/* 2. Buffering Loading Spinner */}
       {isBuffering && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none z-20">
@@ -250,8 +383,8 @@ export default function ReelCard({
         </div>
       )}
 
-      {/* 3. Dark Vignette & Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/60 pointer-events-none z-10" />
+      {/* 3. Subtle Top Gradient for Contrast while keeping Video Bright */}
+      <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
 
       {/* 4. Center Play/Pause Feedback Indicator */}
       {showPlayPauseFeedback && (
@@ -445,10 +578,10 @@ export default function ReelCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenAudioModal(audioTrack);
+            onOpenAudioModal(effectiveAudioTrack);
           }}
           className="pt-2 flex flex-col items-center group cursor-pointer"
-          title={`Audio: ${audioTrack.title}`}
+          title={`Audio: ${effectiveAudioTrack.title || 'Soundtrack'}`}
         >
           <div className={`w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-600 via-indigo-900 to-fuchsia-600 p-0.5 border border-white/30 shadow-lg flex items-center justify-center ${isPlaying && !isMuted ? 'animate-spin-slow' : ''}`}>
             <div className="w-3 h-3 rounded-full bg-slate-950 border border-white/40" />
@@ -465,17 +598,17 @@ export default function ReelCard({
       </div>
 
       {/* 8. Bottom Creator Information, Caption & Audio Marquee */}
-      <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/95 via-black/60 to-transparent text-white z-20 space-y-2 pointer-events-auto">
+      <div className="absolute bottom-0 inset-x-0 p-5 pr-16 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white z-20 space-y-2 pointer-events-auto">
         {/* Creator Identity Bar */}
         <div className="flex items-center justify-between">
           <Link
-            to={`/profile/${reel.username}`}
+            to={`/profile/${authorUsername}`}
             className="flex items-center gap-2.5 group cursor-pointer"
           >
             <div className="relative">
               <img
-                src={reel.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${reel.username}`}
-                alt={reel.displayName || reel.username}
+                src={authorAvatarUrl}
+                alt={authorDisplayName}
                 className="w-10 h-10 rounded-full border-2 border-cyan-400 object-cover shadow-lg group-hover:scale-105 transition-transform"
               />
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-950" />
@@ -483,10 +616,10 @@ export default function ReelCard({
 
             <div>
               <div className="flex items-center gap-1 font-extrabold text-sm text-white group-hover:text-cyan-400 transition-colors">
-                <span>{reel.displayName || reel.username}</span>
-                {reel.isVerified && <Check className="w-3.5 h-3.5 text-cyan-400 stroke-[3]" />}
+                <span>{authorDisplayName}</span>
+                {authorIsVerified && <Check className="w-3.5 h-3.5 text-cyan-400 stroke-[3]" />}
               </div>
-              <span className="text-[11px] text-slate-300">@{reel.username}</span>
+              <span className="text-[11px] text-slate-300">@{authorUsername}</span>
             </div>
           </Link>
 
@@ -529,12 +662,16 @@ export default function ReelCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenAudioModal(audioTrack);
+            onOpenAudioModal(effectiveAudioTrack);
           }}
           className="flex items-center space-x-2 text-[11px] text-cyan-300 font-semibold bg-black/60 hover:bg-black/80 px-3 py-1 rounded-full w-fit backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
         >
           <Music2 className={`w-3.5 h-3.5 text-cyan-400 ${!isMuted && isPlaying ? 'animate-pulse' : ''}`} />
-          <span className="truncate max-w-[210px]">Original Audio · {reel.displayName || reel.username}</span>
+          <span className="truncate max-w-[210px]">
+            {effectiveAudioTrack.title
+              ? `${effectiveAudioTrack.title} · ${effectiveAudioTrack.artist || 'Pulse Music'}`
+              : `Original Audio · ${authorDisplayName}`}
+          </span>
         </button>
       </div>
 

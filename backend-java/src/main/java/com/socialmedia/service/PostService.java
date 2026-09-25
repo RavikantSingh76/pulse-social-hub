@@ -42,6 +42,9 @@ public class PostService {
     private CommentRepository commentRepository;
 
     @Autowired
+    private CommentLikeRepository commentLikeRepository;
+
+    @Autowired
     private SavedPostRepository savedPostRepository;
 
     @Autowired
@@ -251,7 +254,57 @@ public class PostService {
             throw new RuntimeException("Unauthorized to delete this post");
         }
 
-        postRepository.delete(post);
+        // 1. Delete physical media files if stored locally
+        if (post.getMediaList() != null) {
+            for (PostMedia media : post.getMediaList()) {
+                String mediaUrl = media.getMediaUrl();
+                if (mediaUrl != null && (mediaUrl.startsWith("/uploads/") || mediaUrl.startsWith("uploads/"))) {
+                    try {
+                        String relativePath = mediaUrl.startsWith("/") ? mediaUrl.substring(1) : mediaUrl;
+                        Path filePath = Paths.get(relativePath);
+                        Files.deleteIfExists(filePath);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
+        // 2. Clean up notifications for post and all its comments
+        List<Comment> postComments = commentRepository.findByPost(post);
+        List<Long> commentIds = postComments != null && !postComments.isEmpty()
+                ? postComments.stream().map(Comment::getId).collect(Collectors.toList())
+                : Collections.emptyList();
+
+        if (!commentIds.isEmpty()) {
+            notificationRepository.deleteByPostAndCommentIds(postId, commentIds);
+        } else {
+            notificationRepository.deleteByPostId(postId);
+        }
+
+        // 3. Clean up reports (for post and comments)
+        reportRepository.deleteByReportedCommentPostId(postId);
+        reportRepository.deleteByReportedPostId(postId);
+
+        // 4. Clean up comment likes & comment reactions
+        commentLikeRepository.deleteByPostId(postId);
+        reactionRepository.deleteByCommentPostId(postId);
+
+        // 5. Clean up comments (child replies first, then top-level comments)
+        commentRepository.deleteRepliesByPostId(postId);
+        commentRepository.deleteByPostId(postId);
+
+        // 6. Clean up post likes, reactions, saved posts, and user feedbacks
+        likeRepository.deleteByPostId(postId);
+        reactionRepository.deleteByPostId(postId);
+        savedPostRepository.deleteByPostId(postId);
+        userFeedbackRepository.deleteByPostId(postId);
+
+        // 7. Clean up media records and hashtags
+        postMediaRepository.deleteByPostId(postId);
+        postRepository.deletePostHashtags(postId);
+
+        // 8. Finally, delete the post itself directly
+        postRepository.deletePostByIdDirect(postId);
     }
 
     @Transactional
@@ -317,6 +370,29 @@ public class PostService {
         long totalCount = reactionRepository.countByPost(post);
         Map<String, Long> groupedCounts = getReactionsCountMap(post);
 
+        return Map.of(
+                "is_liked", currentReaction != null,
+                "current_reaction", currentReaction != null ? currentReaction : "",
+                "likes_count", totalCount,
+                "reaction_counts", groupedCounts
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getPostReactionsSummary(Long userId, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        String currentReaction = null;
+        if (userId != null) {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                Optional<Reaction> existing = reactionRepository.findByUserAndPost(user, post);
+                if (existing.isPresent()) {
+                    currentReaction = existing.get().getReactionType().name();
+                }
+            }
+        }
+        long totalCount = reactionRepository.countByPost(post);
+        Map<String, Long> groupedCounts = getReactionsCountMap(post);
         return Map.of(
                 "is_liked", currentReaction != null,
                 "current_reaction", currentReaction != null ? currentReaction : "",

@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl } from '../utils/mediaUtils';
 
 const CATEGORIES = [
   { id: 'ALL', label: '🔥 All' },
@@ -240,12 +241,20 @@ export const ExplorePage = () => {
                 >
                   {mediaUrl ? (
                     isVideo ? (
-                      <video
-                        src={mediaUrl}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        muted
-                        playsInline
-                      />
+                      getYouTubeId(mediaUrl) ? (
+                        <img
+                          src={getYouTubeThumbnail(mediaUrl)}
+                          alt="Explore YouTube Video"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <video
+                          src={resolveSafeMediaUrl(mediaUrl)}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          muted
+                          playsInline
+                        />
+                      )
                     ) : (
                       <img
                         src={mediaUrl}

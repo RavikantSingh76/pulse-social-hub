@@ -68,8 +68,10 @@ export default function GroupChatModal({ onClose, onCreated }) {
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-500 mb-1 block">Group Name</label>
+            <label htmlFor="group-chat-name" className="text-xs font-semibold text-slate-500 mb-1 block">Group Name</label>
             <input
+              id="group-chat-name"
+              name="groupName"
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}

@@ -29,12 +29,13 @@ import toast from 'react-hot-toast';
 
 // Curated stock assets for instant demonstration
 const STOCK_VIDEO_ASSETS = [
-  { id: 's1', title: 'Late Night City Traffic', url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-city-traffic-at-night-42261-large.mp4', duration: 3.5, thumbnail: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300' },
-  { id: 's2', title: 'Coding On Laptop In Dark', url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-coding-on-a-laptop-in-a-dark-room-41885-large.mp4', duration: 4.5, thumbnail: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=300' },
-  { id: 's3', title: 'Modern Financial District', url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-modern-buildings-in-a-financial-district-42469-large.mp4', duration: 4.0, thumbnail: 'https://images.pexels.com/photos/373912/pexels-photo-373912.jpeg?auto=compress&cs=tinysrgb&w=300' },
-  { id: 's4', title: 'Sunset Horizon Waves', url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-sun-setting-over-the-ocean-horizon-41571-large.mp4', duration: 4.5, thumbnail: 'https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=300' },
-  { id: 's5', title: 'Keyboard Typing ASMR', url: 'https://assets.mixkit.co/videos/preview/mixkit-vertical-hands-typing-on-a-laptop-keyboard-41589-large.mp4', duration: 3.5, thumbnail: 'https://images.pexels.com/photos/4974914/pexels-photo-4974914.jpeg?auto=compress&cs=tinysrgb&w=300' }
+  { id: 's1', title: 'Late Night City Traffic', url: '/sample-videos/sample1.mp4', duration: 3.5, thumbnail: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300' },
+  { id: 's2', title: 'Coding On Laptop In Dark', url: '/sample-videos/sample2.mp4', duration: 4.5, thumbnail: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=300' },
+  { id: 's3', title: 'Sunset Horizon Waves', url: '/sample-videos/sample3.mp4', duration: 4.0, thumbnail: 'https://images.pexels.com/photos/189349/pexels-photo-189349.jpeg?auto=compress&cs=tinysrgb&w=300' },
+  { id: 's4', title: 'Modern Financial District', url: 'https://media.w3.org/2010/05/video/movie_300.mp4', duration: 4.5, thumbnail: 'https://images.pexels.com/photos/373912/pexels-photo-373912.jpeg?auto=compress&cs=tinysrgb&w=300' },
+  { id: 's5', title: 'Developer Workflow', url: 'https://media.w3.org/2010/05/bunny/trailer.mp4', duration: 3.5, thumbnail: 'https://images.pexels.com/photos/4974914/pexels-photo-4974914.jpeg?auto=compress&cs=tinysrgb&w=300' }
 ];
+
 
 const SOUND_EFFECTS_LIST = [
   { id: 'sfx_impact', name: 'Sub-Bass Impact Drop', type: 'impact', duration: 1.2, play: () => soundFx.playImpactDrop() },
@@ -57,7 +58,8 @@ const TRANSITIONS_LIST = [
 
 const FILTERS_LIST = [
   { id: 'none', name: 'Natural (None)', desc: 'Original colors' },
-  { id: 'cinematic', name: 'Cinematic Teal & Orange', desc: 'Punchy contrast & moody shadows' },
+  { id: 'bright', name: 'Bright & Vibrant ✨', desc: 'Luminous exposure & vivid clarity' },
+  { id: 'cinematic', name: 'Cinematic Teal & Orange', desc: 'Punchy contrast & vivid colors' },
   { id: 'cyberpunk', name: 'Neon Cyberpunk', desc: 'Vibrant neon cyan and pink hues' },
   { id: 'warm', name: 'Sunset Warmth', desc: 'Golden hour amber warmth' },
   { id: 'cool', name: 'Arctic Cool', desc: 'Clean high-tech blue tone' },
@@ -264,10 +266,11 @@ export default function StudioLeftSidebar({
               </div>
 
               {/* Quick Suggestion Chips */}
-              <div className="flex items-center gap-1 pt-1 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1.5 pt-1 overflow-x-auto scrollbar-none">
                 {[
-                  { label: '🔥 Short #1', url: 'https://www.youtube.com/shorts/Oq6eoP0Jac0' },
-                  { label: '⚡ Short #2', url: 'https://www.youtube.com/shorts/a2ILUL0x_Zk' }
+                  { label: '🔥 Featured Reel', url: 'https://www.youtube.com/shorts/7b6at-s4yjA', title: 'Viral Technical Short' },
+                  { label: '⚡ Short #1', url: 'https://www.youtube.com/shorts/Oq6eoP0Jac0', title: 'Tech Workflow Short' },
+                  { label: '🚀 Short #2', url: 'https://www.youtube.com/shorts/a2ILUL0x_Zk', title: 'Coding Masterclass Short' }
                 ].map((s, idx) => (
                   <button
                     key={idx}
@@ -275,7 +278,7 @@ export default function StudioLeftSidebar({
                       soundFx.playChimeCTA();
                       onAddMediaClip({
                         id: `yt_quick_${idx}_${Date.now()}`,
-                        title: `YouTube Short (${idx + 1})`,
+                        title: s.title || `YouTube Short (${idx + 1})`,
                         url: s.url,
                         mediaType: 'VIDEO',
                         duration: 15.0,
@@ -288,13 +291,14 @@ export default function StudioLeftSidebar({
                       });
                       toast.success(`Imported: ${s.label} to timeline! 🚀`);
                     }}
-                    className="px-2 py-0.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] font-bold text-slate-300 hover:text-white whitespace-nowrap transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] font-bold text-cyan-300 hover:text-white whitespace-nowrap transition-colors cursor-pointer"
                   >
                     {s.label}
                   </button>
                 ))}
               </div>
             </div>
+
 
             {/* Stock Footage Library */}
             <div className="space-y-2">
@@ -521,14 +525,86 @@ export default function StudioLeftSidebar({
 
         {/* 3. TEXT & CAPTIONS TAB */}
         {activeTab === 'text' && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Add Text Overlays</h4>
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Type className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span>Text Layout Presets</span>
+              </h4>
+              <span className="text-[9px] font-mono text-cyan-400 font-bold">Auto-Aligned</span>
+            </div>
 
             {[
-              { label: '⚡ Big Punchy Hook', text: 'STOP BUILDING THE OLD WAY', fontSize: 32, isBold: true, color: '#facc15', bg: true, anim: 'pop' },
-              { label: '🚀 Sub-10ms Feature Pill', text: 'Sub-10ms High Concurrency Engine', fontSize: 26, isBold: true, color: '#38bdf8', bg: true, anim: 'typewriter' },
-              { label: '👑 Creator Call To Action', text: 'Follow @ravikant & Join Pulse Today', fontSize: 28, isBold: true, color: '#f472b6', bg: true, anim: 'glow' },
-              { label: '💬 Minimalist Caption', text: 'Late night architecture sprint in Bengaluru 🌃', fontSize: 22, isBold: false, color: '#ffffff', bg: false, anim: 'slide' }
+              {
+                category: 'VIRAL HOOKS',
+                badge: '🎯 Top / Hook Badge',
+                label: '⚡ Big Punchy Hook',
+                text: '⚡ STOP BUILDING THE OLD WAY\nNext-Gen Distributed Architecture',
+                fontSize: 22,
+                isBold: true,
+                color: '#facc15',
+                bg: true,
+                anim: 'pop',
+                textAlign: 'center',
+                verticalAlign: 'top',
+                posY: 10
+              },
+              {
+                category: 'SUBTITLES & CAPTIONS',
+                badge: '💬 Reels Safe Bottom',
+                label: '🎙️ Auto Caption Pill',
+                text: '🎙️ Sub-10ms Microservices Engine\nSpring Boot 3 + React 18',
+                fontSize: 20,
+                isBold: true,
+                color: '#ffffff',
+                bg: true,
+                anim: 'glow',
+                textAlign: 'center',
+                verticalAlign: 'bottom',
+                posY: -10
+              },
+              {
+                category: 'LOWER THIRDS',
+                badge: '🏷️ Speaker / Bio Tag',
+                label: '👑 Ravikant Singh | Chief Architect',
+                text: '👑 Ravikant Singh\nLead Distributed Systems Architect',
+                fontSize: 20,
+                isBold: true,
+                color: '#38bdf8',
+                bg: true,
+                anim: 'slide',
+                textAlign: 'left',
+                verticalAlign: 'bottom',
+                posY: -15
+              },
+              {
+                category: 'CALL TO ACTION',
+                badge: '✨ Outro Glow',
+                label: '🚀 Follow & Join Pulse Social',
+                text: '🌟 Follow @ravikant & Join Pulse\nBuild The Future of Social',
+                fontSize: 22,
+                isBold: true,
+                color: '#f472b6',
+                bg: true,
+                anim: 'pop',
+                textAlign: 'center',
+                verticalAlign: 'center',
+                posY: 0
+              },
+              {
+                category: 'AESTHETIC MINIMAL',
+                badge: '✨ Clean Editorial',
+                label: '🏙️ Late Night Dev Sprint',
+                text: '🏙️ Bengaluru Architecture Sprint\n02:45 AM • Deep Focus Flow',
+                fontSize: 18,
+                isBold: false,
+                color: '#e2e8f0',
+                bg: true,
+                anim: 'slide',
+                textAlign: 'center',
+                verticalAlign: 'top',
+                posY: 10
+              }
             ].map((preset, idx) => (
               <button
                 key={idx}
@@ -538,24 +614,34 @@ export default function StudioLeftSidebar({
                     id: `txt_${Date.now()}_${idx}`,
                     text: preset.text,
                     startTime: 0,
-                    duration: 4.0,
+                    duration: 4.5,
                     fontSize: preset.fontSize,
                     isBold: preset.isBold,
                     color: preset.color,
                     hasBackground: preset.bg,
                     animation: preset.anim,
+                    textAlign: preset.textAlign,
+                    verticalAlign: preset.verticalAlign,
                     posX: 0,
-                    posY: 0
+                    posY: preset.posY || 0,
+                    letterSpacing: preset.fontSize > 28 ? 1 : 0
                   });
-                  toast.success('Text layer added to timeline! 🔤');
+                  toast.success(`Added ${preset.label}! 🔤`);
                 }}
-                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-400 text-left space-y-1 transition-all group cursor-pointer"
+                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-400 text-left space-y-1.5 transition-all group cursor-pointer shadow-sm hover:shadow-cyan-500/10"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-white group-hover:text-cyan-400 transition-colors">{preset.label}</span>
-                  <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400" />
+                  <span className="text-[9px] font-black uppercase text-cyan-400 tracking-wider">
+                    {preset.badge}
+                  </span>
+                  <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 transition-colors" />
                 </div>
-                <p className="text-[11px] text-slate-400 font-medium truncate">{preset.text}</p>
+                <p className="text-xs font-black text-white group-hover:text-cyan-300 transition-colors">
+                  {preset.label}
+                </p>
+                <p className="text-[11px] text-slate-400 font-medium truncate font-mono bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/80">
+                  {preset.text}
+                </p>
               </button>
             ))}
           </div>

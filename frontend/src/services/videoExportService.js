@@ -1,4 +1,5 @@
 // Real Canvas-based Video Export & Audio Compositing Engine for Pulse Studio
+import { getYouTubeId, getYouTubeThumbnail, LOCAL_SAMPLE_VIDEOS, resolveSafeMediaUrl } from '../utils/mediaUtils';
 
 class VideoExportService {
   constructor() {
@@ -51,25 +52,99 @@ class VideoExportService {
     // 3. Setup Audio Compositor via Web Audio API
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioCtx();
+    await audioCtx.resume().catch(() => {});
     const destNode = audioCtx.createMediaStreamDestination();
+
+    // Attach a continuous silent carrier tone so destination audio stream is always clocking
+    try {
+      const silentOsc = audioCtx.createOscillator();
+      const silentGain = audioCtx.createGain();
+      silentGain.gain.value = 0.0001; // Silent carrier
+      silentOsc.connect(silentGain);
+      silentGain.connect(destNode);
+      silentOsc.start();
+    } catch (e) {}
 
     // Calculate Total Timeline Duration
     const totalDuration = timelineClips.reduce((sum, c) => sum + (c.duration || 3), 0);
 
     onProgress({ stage: 'preparing', progress: 5, message: 'Initializing rendering pipeline & preloading media...' });
 
-    // Preload video elements and images
+    // Preload video elements and images safely with timeout fallbacks
     const loadedElements = await Promise.all(
-      timelineClips.map(async (clip) => {
+      timelineClips.map(async (clip, idx) => {
+        const ytId = getYouTubeId(clip.url);
+        if (ytId) {
+          // YouTube clips cannot be read raw via HTML5 Video element due to CORS
+          // Preload the high-quality YouTube thumbnail as a canvas image element
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = getYouTubeThumbnail(clip.url, 'hqdefault');
+          await new Promise((resolve) => {
+            let finished = false;
+            const timer = setTimeout(() => {
+              if (!finished) {
+                finished = true;
+                resolve();
+              }
+            }, 3000);
+
+            img.onload = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                resolve();
+              }
+            };
+            img.onerror = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                img.src = 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=800';
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              }
+            };
+          });
+          return { ...clip, element: img, isVideo: false };
+        }
+
         if (clip.mediaType === 'VIDEO') {
           const video = document.createElement('video');
           video.crossOrigin = 'anonymous';
-          video.src = clip.url;
+          const safeUrl = resolveSafeMediaUrl(clip.url, idx);
+          video.src = safeUrl;
           video.muted = true;
           video.playsInline = true;
           await new Promise((resolve) => {
-            video.onloadeddata = () => resolve();
-            video.onerror = () => resolve();
+            let finished = false;
+            const timer = setTimeout(() => {
+              if (!finished) {
+                finished = true;
+                video.src = LOCAL_SAMPLE_VIDEOS[idx % LOCAL_SAMPLE_VIDEOS.length];
+                video.onloadeddata = () => resolve();
+                video.onerror = () => resolve();
+                video.load();
+              }
+            }, 3500);
+
+            video.onloadeddata = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                resolve();
+              }
+            };
+            video.onerror = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                video.src = LOCAL_SAMPLE_VIDEOS[idx % LOCAL_SAMPLE_VIDEOS.length];
+                video.onloadeddata = () => resolve();
+                video.onerror = () => resolve();
+                video.load();
+              }
+            };
             video.load();
           });
           return { ...clip, element: video, isVideo: true };
@@ -78,8 +153,28 @@ class VideoExportService {
           img.crossOrigin = 'anonymous';
           img.src = clip.url;
           await new Promise((resolve) => {
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
+            let finished = false;
+            const timer = setTimeout(() => {
+              if (!finished) {
+                finished = true;
+                resolve();
+              }
+            }, 3000);
+
+            img.onload = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                resolve();
+              }
+            };
+            img.onerror = () => {
+              if (!finished) {
+                finished = true;
+                clearTimeout(timer);
+                resolve();
+              }
+            };
           });
           return { ...clip, element: img, isVideo: false };
         }
@@ -100,6 +195,31 @@ class VideoExportService {
       } catch (e) {
         console.warn('Could not connect background music to audio destination:', e);
       }
+    }
+
+    // Setup Voiceover Audio Nodes if present
+    const activeVoiceAudioEls = [];
+    if (voiceoverTracks && voiceoverTracks.length > 0) {
+      voiceoverTracks.forEach((vo) => {
+        try {
+          if (vo.audioUrl) {
+            const voEl = new Audio(vo.audioUrl);
+            const voSource = audioCtx.createMediaElementSource(voEl);
+            const voGain = audioCtx.createGain();
+            voGain.gain.value = (vo.volume !== undefined ? vo.volume : 100) / 100;
+            voSource.connect(voGain);
+            voGain.connect(destNode);
+            activeVoiceAudioEls.push({
+              el: voEl,
+              startTime: vo.startTime || 0,
+              duration: vo.duration || 5,
+              hasStarted: false
+            });
+          }
+        } catch (e) {
+          console.warn('Could not connect voiceover to audio destination:', e);
+        }
+      });
     }
 
     onProgress({ stage: 'rendering', progress: 15, message: 'Compositing video frames & text animations...' });
@@ -188,8 +308,8 @@ class VideoExportService {
         ctx.fillStyle = '#05070f';
         ctx.fillRect(0, 0, width, height);
 
-        // Apply Filter presets
-        applyCanvasFilters(ctx, filterPreset || activeClip?.filter);
+        // Apply Filter presets with luminous brightness and clip adjustments
+        applyCanvasFilters(ctx, filterPreset || activeClip?.filter, activeClip);
 
         // Draw Active Clip
         if (activeClip && activeClip.element) {
@@ -209,14 +329,20 @@ class VideoExportService {
               else activeClip.element.currentTime = clipLocalTime;
               ctx.drawImage(activeClip.element, -width / 2, -height / 2, width, height);
             } catch (e) {
-              ctx.drawImage(activeClip.element, -width / 2, -height / 2, width, height);
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(-width / 2, -height / 2, width, height);
             }
           } else {
-            // Ken Burns subtle pan for static images
-            const progressRatio = (currentTime - accumulatedTime) / (activeClip.duration || 3);
-            const zoomFactor = 1.0 + (progressRatio * 0.08);
-            ctx.scale(zoomFactor, zoomFactor);
-            ctx.drawImage(activeClip.element, -width / 2, -height / 2, width, height);
+            try {
+              // Ken Burns subtle pan for static images
+              const progressRatio = (currentTime - accumulatedTime) / (activeClip.duration || 3);
+              const zoomFactor = 1.0 + (progressRatio * 0.08);
+              ctx.scale(zoomFactor, zoomFactor);
+              ctx.drawImage(activeClip.element, -width / 2, -height / 2, width, height);
+            } catch (e) {
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(-width / 2, -height / 2, width, height);
+            }
           }
           ctx.restore();
         }
@@ -233,7 +359,8 @@ class VideoExportService {
             ctx.save();
             const isBold = layer.isBold !== false;
             const isItalic = layer.isItalic ? 'italic ' : '';
-            ctx.font = `${isItalic}${isBold ? 'bold ' : ''}${layer.fontSize || 36}px ${layer.fontFamily || 'Inter, sans-serif'}`;
+            const baseFontSize = layer.fontSize ? Math.round(layer.fontSize * 1.5) : 48;
+            ctx.font = `${isItalic}${isBold ? 'bold ' : ''}${baseFontSize}px ${layer.fontFamily || 'Inter, sans-serif'}`;
             ctx.fillStyle = layer.color || '#ffffff';
 
             const textAlign = layer.textAlign || layer.align || 'center';
@@ -242,32 +369,63 @@ class VideoExportService {
 
             const vertAlign = layer.verticalAlign || 'bottom';
             let baseY = height * 0.78;
-            if (vertAlign === 'top') baseY = height * 0.15;
+            if (vertAlign === 'top') baseY = height * 0.16;
             else if (vertAlign === 'center') baseY = height * 0.50;
 
-            let x = width / 2 + (layer.posX || 0);
-            if (textAlign === 'left') x = width * 0.1 + (layer.posX || 0);
-            else if (textAlign === 'right') x = width * 0.9 + (layer.posX || 0);
+            let x = width / 2 + ((layer.posX || 0) * (width / 326));
+            if (textAlign === 'left') x = width * 0.1 + ((layer.posX || 0) * (width / 326));
+            else if (textAlign === 'right') x = width * 0.9 + ((layer.posX || 0) * (width / 326));
 
-            const y = baseY + (layer.posY || 0);
+            const y = baseY + ((layer.posY || 0) * (height / 580));
 
-            // Draw Background Pill if enabled
+            const lines = (layer.text || '').split('\n');
+            const lineHeight = baseFontSize * 1.3;
+            const totalTextHeight = lines.length * lineHeight;
+
+            // Measure max width across lines
+            let maxLineWidth = 0;
+            lines.forEach((line) => {
+              const lw = ctx.measureText(line).width;
+              if (lw > maxLineWidth) maxLineWidth = lw;
+            });
+
+            // Draw Background Glass Pill if enabled
             if (layer.hasBackground) {
-              const textWidth = ctx.measureText(layer.text).width;
-              ctx.fillStyle = 'rgba(0,0,0,0.8)';
+              ctx.save();
+              ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
               ctx.beginPath();
-              let pillX = x - (textWidth / 2) - 16;
-              if (textAlign === 'left') pillX = x - 16;
-              else if (textAlign === 'right') pillX = x - textWidth - 16;
+              let pillX = x - (maxLineWidth / 2) - 36;
+              if (textAlign === 'left') pillX = x - 36;
+              else if (textAlign === 'right') pillX = x - maxLineWidth - 36;
 
-              ctx.roundRect(pillX, y - 26, textWidth + 32, 52, 14);
+              const pillY = y - (totalTextHeight / 2) - 20;
+              const pillWidth = maxLineWidth + 72;
+              const pillHeight = totalTextHeight + 40;
+
+              ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 26);
               ctx.fill();
-              ctx.fillStyle = layer.color || '#ffffff';
+
+              // Subtle frosted glass border
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+              ctx.lineWidth = 3;
+              ctx.stroke();
+              ctx.restore();
             }
 
-            ctx.shadowColor = 'rgba(0,0,0,0.85)';
-            ctx.shadowBlur = 10;
-            ctx.fillText(layer.text, x, y);
+            // Draw each text line
+            ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            ctx.shadowBlur = 12;
+            const startY = y - ((lines.length - 1) * lineHeight) / 2;
+            lines.forEach((line, lineIdx) => {
+              if (lineIdx === 0) {
+                ctx.fillStyle = layer.color || '#ffffff';
+                ctx.font = `${isItalic}${isBold ? 'bold ' : ''}${baseFontSize}px ${layer.fontFamily || 'Inter, sans-serif'}`;
+              } else {
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = `${isItalic}600 ${Math.round(baseFontSize * 0.86)}px ${layer.fontFamily || 'Inter, sans-serif'}`;
+              }
+              ctx.fillText(line, x, startY + (lineIdx * lineHeight));
+            });
             ctx.restore();
           }
         });
@@ -282,11 +440,25 @@ class VideoExportService {
           });
         }
 
+        // Trigger voiceovers at their respective startTime
+        activeVoiceAudioEls.forEach(vo => {
+          if (!vo.hasStarted && currentTime >= vo.startTime && currentTime <= vo.startTime + vo.duration) {
+            vo.hasStarted = true;
+            try {
+              vo.el.currentTime = currentTime - vo.startTime;
+              vo.el.play().catch(() => {});
+            } catch (e) {}
+          }
+        });
+
         if (currentFrame < totalFrames) {
           setTimeout(renderNextFrame, frameIntervalMs / 2); // 2x realtime speed
         } else {
           onProgress({ stage: 'finalizing', progress: 98, message: 'Finalizing video codecs and packaging audio stream...' });
           if (bgAudioEl) bgAudioEl.pause();
+          activeVoiceAudioEls.forEach(v => {
+            try { v.el.pause(); } catch (e) {}
+          });
           setTimeout(() => {
             mediaRecorder.stop();
           }, 300);
@@ -305,30 +477,66 @@ class VideoExportService {
   }
 }
 
-// Helper to apply CSS/Canvas filters
-function applyCanvasFilters(ctx, preset) {
+// Helper to apply CSS/Canvas filters with high clarity, bright exposure, and custom sliders
+function applyCanvasFilters(ctx, preset, activeClip = {}) {
+  const customBrightness = (activeClip.brightness ?? 100) / 100;
+  const customContrast = (activeClip.contrast ?? 100) / 100;
+  const customSaturation = (activeClip.saturation ?? 100) / 100;
+
+  let baseBrightness = 1.0;
+  let baseContrast = 1.0;
+  let baseSaturation = 1.0;
+  let extraFilters = '';
+
   switch (preset) {
+    case 'bright':
+      baseBrightness = 1.20;
+      baseContrast = 1.05;
+      baseSaturation = 1.20;
+      break;
     case 'cinematic':
-      ctx.filter = 'contrast(120%) brightness(95%) saturate(110%)';
+      baseBrightness = 1.10;
+      baseContrast = 1.10;
+      baseSaturation = 1.15;
       break;
     case 'cyberpunk':
-      ctx.filter = 'contrast(135%) saturate(160%) hue-rotate(15deg)';
+      baseBrightness = 1.05;
+      baseContrast = 1.15;
+      baseSaturation = 1.40;
+      extraFilters = 'hue-rotate(15deg) ';
       break;
     case 'vintage':
-      ctx.filter = 'sepia(40%) contrast(110%) brightness(90%)';
+      baseBrightness = 1.08;
+      baseContrast = 1.05;
+      extraFilters = 'sepia(25%) ';
       break;
     case 'warm':
-      ctx.filter = 'sepia(25%) saturate(125%) brightness(105%)';
+      baseBrightness = 1.12;
+      baseSaturation = 1.20;
+      extraFilters = 'sepia(20%) ';
       break;
     case 'cool':
-      ctx.filter = 'hue-rotate(185deg) contrast(105%)';
+      baseBrightness = 1.08;
+      baseContrast = 1.05;
+      extraFilters = 'hue-rotate(185deg) ';
       break;
     case 'bw':
-      ctx.filter = 'grayscale(100%) contrast(125%)';
+      baseBrightness = 1.05;
+      baseContrast = 1.15;
+      extraFilters = 'grayscale(100%) ';
       break;
     default:
-      ctx.filter = 'none';
       break;
+  }
+
+  const finalBrightness = Math.round(baseBrightness * customBrightness * 100);
+  const finalContrast = Math.round(baseContrast * customContrast * 100);
+  const finalSaturation = Math.round(baseSaturation * customSaturation * 100);
+
+  if (preset === 'none' && !activeClip.brightness && !activeClip.contrast && !activeClip.saturation) {
+    ctx.filter = 'none';
+  } else {
+    ctx.filter = `${extraFilters}brightness(${finalBrightness}%) contrast(${finalContrast}%) saturate(${finalSaturation}%)`.trim();
   }
 }
 

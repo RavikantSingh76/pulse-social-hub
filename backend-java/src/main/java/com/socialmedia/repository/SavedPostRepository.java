@@ -16,4 +16,8 @@ public interface SavedPostRepository extends JpaRepository<SavedPost, Long> {
     boolean existsByUserAndPost(User user, Post post);
     void deleteByUserAndPost(User user, Post post);
     List<SavedPost> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM SavedPost sp WHERE sp.post.id = :postId")
+    void deleteByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
 }

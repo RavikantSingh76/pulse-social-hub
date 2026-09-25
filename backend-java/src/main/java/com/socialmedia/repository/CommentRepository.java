@@ -14,4 +14,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByParentCommentOrderByCreatedAtAsc(Comment parent);
     long countByPost(Post post);
     long countByPostUser(User user);
+    List<Comment> findByPost(Post post);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM Comment c WHERE c.post.id = :postId AND c.parentComment IS NOT NULL")
+    void deleteRepliesByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM Comment c WHERE c.post.id = :postId")
+    void deleteByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
 }

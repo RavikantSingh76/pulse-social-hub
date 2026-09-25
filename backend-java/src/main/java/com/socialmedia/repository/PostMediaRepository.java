@@ -10,4 +10,8 @@ import java.util.List;
 @Repository
 public interface PostMediaRepository extends JpaRepository<PostMedia, Long> {
     List<PostMedia> findByPostOrderByOrderIndexAsc(Post post);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM PostMedia pm WHERE pm.post.id = :postId")
+    void deleteByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
 }

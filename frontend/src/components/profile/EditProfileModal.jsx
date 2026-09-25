@@ -143,8 +143,10 @@ export const EditProfileModal = ({ isOpen, onClose, user, profile, onUpdated, on
 
         {/* Display Name Input */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
+          <label htmlFor="edit-profile-display-name" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
           <input
+            id="edit-profile-display-name"
+            name="displayName"
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -155,8 +157,10 @@ export const EditProfileModal = ({ isOpen, onClose, user, profile, onUpdated, on
 
         {/* Bio Input */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Bio</label>
+          <label htmlFor="edit-profile-bio" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Bio</label>
           <textarea
+            id="edit-profile-bio"
+            name="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
@@ -167,10 +171,12 @@ export const EditProfileModal = ({ isOpen, onClose, user, profile, onUpdated, on
 
         {/* Website Input */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Website</label>
+          <label htmlFor="edit-profile-website" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Website</label>
           <div className="relative">
             <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
             <input
+              id="edit-profile-website"
+              name="website"
               type="text"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
@@ -182,8 +188,10 @@ export const EditProfileModal = ({ isOpen, onClose, user, profile, onUpdated, on
 
         {/* Location Input */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Location</label>
+          <label htmlFor="edit-profile-location" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Location</label>
           <input
+            id="edit-profile-location"
+            name="location"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -202,6 +210,8 @@ export const EditProfileModal = ({ isOpen, onClose, user, profile, onUpdated, on
             </div>
           </div>
           <input
+            id="edit-profile-private"
+            name="isPrivate"
             type="checkbox"
             checked={isPrivate}
             onChange={(e) => setIsPrivate(e.target.checked)}

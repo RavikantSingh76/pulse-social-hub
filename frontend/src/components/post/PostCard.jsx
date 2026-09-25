@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../common/Avatar';
 import { CommentSection } from '../comment/CommentSection';
+import { CommentsDrawer } from '../comment/CommentsDrawer';
+import { UserProfileHoverCard } from '../common/UserProfileHoverCard';
 import { ReportModal } from '../common/ReportModal';
 import { EditPostModal } from './EditPostModal';
 import { ShareModal } from './ShareModal';
@@ -22,7 +24,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Smile
+  Smile,
+  Maximize2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { soundFx } from '../../utils/audioEffects';
@@ -36,6 +39,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
   const [isSaved, setIsSaved] = useState(initialPost.isSaved);
   const [commentsCount, setCommentsCount] = useState(initialPost.commentsCount || 0);
   const [showComments, setShowComments] = useState(false);
+  const [isCommentsDrawerOpen, setIsCommentsDrawerOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -144,58 +148,67 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
   const isLongCaption = captionText.length > 100;
 
   return (
-    <article className="bg-slate-900/80 dark:bg-slate-900/90 rounded-3xl border border-slate-800/80 hover:border-slate-700/80 mb-6 shadow-xl shadow-slate-950/20 backdrop-blur-xl overflow-hidden transition-all duration-200">
+    <article className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 mb-6 shadow-xl shadow-slate-900/5 dark:shadow-slate-950/20 backdrop-blur-xl overflow-hidden transition-all duration-200">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4 px-5">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <Avatar src={post.avatarUrl} username={post.username} size="md" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-1.5">
-              <Link to={`/profile/${post.username}`} className="font-bold text-sm text-slate-100 hover:text-cyan-400 transition-colors flex items-center gap-1">
-                <span>{post.displayName || post.username}</span>
-                {post.isVerified && (
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-cyan-500 text-white text-[9px] font-black" title="Verified Creator">
-                    ✓
+        <UserProfileHoverCard
+          username={post.username}
+          initialData={{
+            avatarUrl: post.avatarUrl,
+            fullName: post.displayName || post.username,
+            username: post.username
+          }}
+        >
+          <div className="flex items-center space-x-3 cursor-pointer">
+            <div className="relative">
+              <Avatar src={post.avatarUrl} username={post.username} size="md" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <Link to={`/profile/${post.username}`} className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors flex items-center gap-1">
+                  <span>{post.displayName || post.username}</span>
+                  {post.isVerified && (
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-cyan-500 text-white text-[9px] font-black" title="Verified Creator">
+                      ✓
+                    </span>
+                  )}
+                </Link>
+                <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{formattedTime}</span>
+              </div>
+              <div className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
+                <Link to={`/profile/${post.username}`} className="hover:text-slate-700 dark:hover:text-slate-300">
+                  @{post.username}
+                </Link>
+                <span>•</span>
+                {post.visibility === 'PUBLIC' && <Globe className="w-3 h-3 text-slate-400" title="Public" />}
+                {post.visibility === 'FOLLOWERS' && <Users className="w-3 h-3 text-slate-400" title="Followers Only" />}
+                {post.visibility === 'CLOSE_FRIENDS' && (
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    ★ Close Friends
                   </span>
                 )}
-              </Link>
-              <span className="text-xs text-slate-500">•</span>
-              <span className="text-xs text-slate-400">{formattedTime}</span>
-            </div>
-            <div className="flex items-center space-x-1.5 text-xs text-slate-400">
-              <Link to={`/profile/${post.username}`} className="hover:text-slate-300">
-                @{post.username}
-              </Link>
-              <span>•</span>
-              {post.visibility === 'PUBLIC' && <Globe className="w-3 h-3 text-slate-400" title="Public" />}
-              {post.visibility === 'FOLLOWERS' && <Users className="w-3 h-3 text-slate-400" title="Followers Only" />}
-              {post.visibility === 'CLOSE_FRIENDS' && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  ★ Close Friends
-                </span>
-              )}
-              {post.visibility === 'PRIVATE' && <Lock className="w-3 h-3 text-slate-400" title="Private" />}
+                {post.visibility === 'PRIVATE' && <Lock className="w-3 h-3 text-slate-400" title="Private" />}
+              </div>
             </div>
           </div>
-        </div>
+        </UserProfileHoverCard>
 
         {/* More Options Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 text-slate-400 hover:text-slate-200 rounded-full hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-20 divide-y divide-slate-800 text-slate-200">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-20 divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
               {isOwner && (
                 <button
                   onClick={() => { setShowMenu(false); setShowEditModal(true); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Edit Post
                 </button>
@@ -212,21 +225,21 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
                       toast.error('Failed to update preference');
                     }
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer text-slate-300"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-slate-600 dark:text-slate-300"
                 >
                   Not Interested
                 </button>
               )}
               <button
                 onClick={() => { setShowMenu(false); setShowShareModal(true); }}
-                className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+                className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Share / Send DM
               </button>
               {(isOwner || isAdmin) && (
                 <button
                   onClick={() => { setShowMenu(false); handleDelete(); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                 >
                   Delete Post
                 </button>
@@ -234,7 +247,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
               {!isOwner && (
                 <button
                   onClick={() => { setShowMenu(false); setShowReportModal(true); }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/40 cursor-pointer"
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
                 >
                   Report Post
                 </button>
@@ -332,17 +345,18 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
             />
 
             <button
-              onClick={() => setShowComments(!showComments)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer"
+              onClick={() => setIsCommentsDrawerOpen(true)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
+              title="Open Comments Drawer"
             >
-              <MessageCircle className="w-5 h-5 text-slate-400" />
+              <MessageCircle className="w-5 h-5 text-slate-500 dark:text-slate-400" />
               <span>Comment</span>
-              {commentsCount > 0 && <span className="text-xs text-slate-400">({commentsCount})</span>}
+              {commentsCount > 0 && <span className="text-xs text-slate-500 dark:text-slate-400">({commentsCount})</span>}
             </button>
 
             <button
               onClick={() => setShowShareModal(true)}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
               title="Share / Send"
             >
               <Share2 className="w-5 h-5" />
@@ -352,23 +366,25 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           <button
             onClick={handleSave}
             className={`p-2 rounded-xl transition-all cursor-pointer ${
-              isSaved ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+              isSaved
+                ? 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-500/30'
+                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80'
             }`}
             title="Bookmark Post"
           >
-            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-cyan-400 stroke-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' : ''}`} />
+            <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-cyan-600 dark:fill-cyan-400 stroke-cyan-600 dark:stroke-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' : ''}`} />
           </button>
         </div>
 
         {/* Video Title */}
         {post.title && (
-          <h3 className="font-bold text-sm text-slate-100">{post.title}</h3>
+          <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{post.title}</h3>
         )}
 
         {/* Caption with collapsible '...more' */}
         {captionText && (
-          <div className="text-sm text-slate-200 leading-relaxed break-words">
-            <Link to={`/profile/${post.username}`} className="font-bold text-white mr-2 hover:underline">
+          <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed break-words">
+            <Link to={`/profile/${post.username}`} className="font-bold text-slate-900 dark:text-white mr-2 hover:underline">
               {post.username}
             </Link>
             {isLongCaption && !isCaptionExpanded ? (
@@ -377,7 +393,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
                 <span>... </span>
                 <button
                   onClick={() => setIsCaptionExpanded(true)}
-                  className="text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+                  className="text-xs font-bold text-slate-500 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-400 transition-colors cursor-pointer"
                 >
                   more
                 </button>
@@ -388,7 +404,7 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
                 {isLongCaption && (
                   <button
                     onClick={() => setIsCaptionExpanded(false)}
-                    className="ml-2 text-xs font-bold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+                    className="ml-2 text-xs font-bold text-slate-500 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-400 transition-colors cursor-pointer"
                   >
                     show less
                   </button>
@@ -398,19 +414,36 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           </div>
         )}
 
-        {/* Comments Toggle */}
-        {commentsCount > 0 && !showComments && (
-          <button
-            onClick={() => setShowComments(true)}
-            className="text-xs font-semibold text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
-          >
-            View all {commentsCount} comments
-          </button>
-        )}
+        {/* Comments Drawer / Inline Toggle */}
+        <div className="flex items-center justify-between pt-1 text-xs">
+          {commentsCount > 0 ? (
+            <button
+              onClick={() => setIsCommentsDrawerOpen(true)}
+              className="font-semibold text-slate-500 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-400 transition-colors cursor-pointer flex items-center space-x-1"
+            >
+              <span>View all {commentsCount} comments</span>
+              <Maximize2 className="w-3 h-3" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsCommentsDrawerOpen(true)}
+              className="font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors cursor-pointer"
+            >
+              Add a comment...
+            </button>
+          )}
 
-        {/* Expanded Comments Section */}
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="text-[11px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors cursor-pointer"
+          >
+            {showComments ? 'Hide inline' : 'Inline view'}
+          </button>
+        </div>
+
+        {/* Expanded Inline Comments Section */}
         {showComments && (
-          <div className="pt-3 border-t border-slate-800 space-y-3">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
             <CommentSection
               postId={post.id}
               onCommentAdded={() => setCommentsCount(c => c + 1)}
@@ -419,6 +452,14 @@ export const PostCard = ({ post: initialPost, onDelete }) => {
           </div>
         )}
       </div>
+
+      {/* Slide-over Comments Drawer */}
+      <CommentsDrawer
+        isOpen={isCommentsDrawerOpen}
+        onClose={() => setIsCommentsDrawerOpen(false)}
+        post={post}
+        onCommentCountChange={(newCount) => setCommentsCount(newCount)}
+      />
 
       {/* Share Modal */}
       <ShareModal

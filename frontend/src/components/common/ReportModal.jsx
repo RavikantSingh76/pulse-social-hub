@@ -26,10 +26,12 @@ export const ReportModal = ({ isOpen, onClose, postId }) => {
     <Modal isOpen={isOpen} onClose={onClose} title="Report Post">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="report-reason-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Why are you reporting this post?
           </label>
           <select
+            id="report-reason-select"
+            name="reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -44,10 +46,12 @@ export const ReportModal = ({ isOpen, onClose, postId }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="report-details-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Additional Details (optional)
           </label>
           <textarea
+            id="report-details-input"
+            name="details"
             rows="3"
             value={details}
             onChange={(e) => setDetails(e.target.value)}

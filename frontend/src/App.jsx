@@ -17,6 +17,7 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { HashtagPage } from './pages/HashtagPage';
 import { PostDetailPage } from './pages/PostDetailPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import PlaylistsPage from './pages/PlaylistsPage';
 import StudioDashboardPage from './pages/StudioDashboardPage';
 import StudioEditorPage from './pages/StudioEditorPage';
 import { useAuth } from './context/AuthContext';
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/reels" element={<ReelsPage />} />
+          <Route path="/playlists" element={<PlaylistsPage />} />
           <Route path="/watch" element={<WatchPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/creator/studio" element={
