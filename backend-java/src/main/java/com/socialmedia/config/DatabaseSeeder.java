@@ -3,6 +3,7 @@ package com.socialmedia.config;
 import com.socialmedia.entity.*;
 import com.socialmedia.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,12 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.admin.password}")
+    private String adminSeedPassword;
+
+    @Value("${app.seed.user.password}")
+    private String userSeedPassword;
+
     @Override
     public void run(String... args) throws Exception {
         User ravikant = seedAdminRavikant();
@@ -81,10 +88,13 @@ public class DatabaseSeeder implements CommandLineRunner {
             System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh avatar & profile updated!");
             return saved;
         } else if (!userRepository.existsByUsernameIgnoreCase("ravikant")) {
+            String adminPwd = (adminSeedPassword != null && !adminSeedPassword.trim().isEmpty())
+                    ? adminSeedPassword.trim()
+                    : UUID.randomUUID().toString().replace("-", "").substring(0, 16);
             User ravikant = User.builder()
                     .username("ravikant")
                     .email(email)
-                    .password(passwordEncoder.encode("Admin@123"))
+                    .password(passwordEncoder.encode(adminPwd))
                     .displayName("Ravikant Singh")
                     .avatarUrl("/uploads/ravikant_avatar.jpg")
                     .coverUrl("https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80")
@@ -97,7 +107,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .build();
 
             User saved = userRepository.save(ravikant);
-            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created (ravikantsinghravi7@gmail.com / Admin@123)");
+            System.out.println("✅ [DatabaseSeeder] Admin Ravikant Singh created (" + email + ")");
             return saved;
         } else {
             return userRepository.findByUsernameIgnoreCase("ravikant").orElse(null);
@@ -113,7 +123,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         System.out.println("⏳ [DatabaseSeeder] Seeding 200 High-Caliber Tech Professionals & Content...");
 
-        String defaultUserPwd = passwordEncoder.encode("User@123");
+        String userPwd = (userSeedPassword != null && !userSeedPassword.trim().isEmpty())
+                ? userSeedPassword.trim()
+                : UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+        String defaultUserPwd = passwordEncoder.encode(userPwd);
 
         String[] firstNames = {
             "Aarav", "Ananya", "Rohan", "Priya", "Vikram", "Sneha", "Rahul", "Pooja", "Aditya", "Riya",

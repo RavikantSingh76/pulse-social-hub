@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { creatorStudioService, postService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_ORIGIN } from '../utils/mediaUtils';
 import {
   BarChart3,
   TrendingUp,
@@ -281,9 +282,9 @@ export default function CreatorStudioPage() {
                   {item.media && item.media.length > 0 ? (
                     <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 flex-shrink-0">
                       {item.media[0].type === 'VIDEO' || item.media[0].url.endsWith('.mp4') ? (
-                        <video src={item.media[0].url.startsWith('http') ? item.media[0].url : `http://localhost:8080${item.media[0].url}`} className="w-full h-full object-cover" />
+                        <video src={item.media[0].url.startsWith('http') ? item.media[0].url : `${API_BASE_ORIGIN}${item.media[0].url}`} className="w-full h-full object-cover" />
                       ) : (
-                        <img src={item.media[0].url.startsWith('http') ? item.media[0].url : `http://localhost:8080${item.media[0].url}`} alt="" className="w-full h-full object-cover" />
+                        <img src={item.media[0].url.startsWith('http') ? item.media[0].url : `${API_BASE_ORIGIN}${item.media[0].url}`} alt="" className="w-full h-full object-cover" />
                       )}
                     </div>
                   ) : (

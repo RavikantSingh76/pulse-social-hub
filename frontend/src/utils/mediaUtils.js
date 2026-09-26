@@ -29,6 +29,8 @@ export function getYouTubeThumbnail(url, quality = 'hqdefault') {
   return `https://img.youtube.com/vi/${ytId}/${quality}.jpg`;
 }
 
+export const API_BASE_ORIGIN = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+
 /**
  * Resolves a safe, non-broken media stream URL.
  * Replaces broken MDN, Google Storage, or Mixkit links with fast local sample videos.
@@ -51,5 +53,5 @@ export function resolveSafeMediaUrl(url, fallbackIdx = 0) {
     return url;
   }
 
-  return `http://localhost:8080${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${API_BASE_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`;
 }

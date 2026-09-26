@@ -8,12 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.AccessDeniedException;
+import com.socialmedia.util.FileUploadSecurityUtil;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,6 +49,11 @@ public class MessageService {
         if (request.getConversationId() != null) {
             conversation = conversationRepository.findById(request.getConversationId())
                     .orElseThrow(() -> new RuntimeException("Conversation not found"));
+            boolean isMember = conversation.getMembers().stream()
+                    .anyMatch(m -> m.getUser().getId().equals(senderId));
+            if (!isMember) {
+                throw new AccessDeniedException("User is not a member of this conversation");
+            }
         } else if (request.getRecipientId() != null) {
             User recipient = userRepository.findById(request.getRecipientId())
                     .orElseThrow(() -> new RuntimeException("Recipient not found"));
@@ -218,8 +220,13 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<MessageResponse> searchMessages(Long conversationId, String query) {
+    public List<MessageResponse> searchMessages(Long conversationId, Long currentUserId, String query) {
         Conversation conv = conversationRepository.findById(conversationId).orElseThrow(() -> new RuntimeException("Conversation not found"));
+        boolean isMember = conv.getMembers().stream()
+                .anyMatch(m -> m.getUser().getId().equals(currentUserId));
+        if (!isMember) {
+            throw new AccessDeniedException("User is not a member of this conversation");
+        }
         return messageRepository.findByConversationOrderByCreatedAtAsc(conv).stream()
                 .filter(m -> m.getMessageText() != null && m.getMessageText().toLowerCase().contains(query.toLowerCase()))
                 .map(this::mapToMessageResponse)
@@ -236,6 +243,12 @@ public class MessageService {
     public List<MessageResponse> getConversationMessages(Long conversationId, Long currentUserId) {
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+        boolean isMember = conv.getMembers().stream()
+                .anyMatch(m -> m.getUser().getId().equals(currentUserId));
+        if (!isMember) {
+            throw new AccessDeniedException("User is not a member of this conversation");
+        }
 
         List<Message> messages = messageRepository.findByConversationOrderByCreatedAtAsc(conv);
         for (Message m : messages) {
@@ -346,17 +359,8 @@ public class MessageService {
 
     private String saveFile(MultipartFile file) {
         try {
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) dir.mkdirs();
-
-            String ext = file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")
-                    ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."))
-                    : ".jpg";
-            String filename = UUID.randomUUID() + ext;
-            Path path = Paths.get(UPLOAD_DIR + filename);
-            Files.write(path, file.getBytes());
-            return "/uploads/" + filename;
-        } catch (IOException e) {
+            return FileUploadSecurityUtil.storeMedia(file, UPLOAD_DIR);
+        } catch (Exception e) {
             throw new RuntimeException("Failed to store media file: " + e.getMessage());
         }
     }

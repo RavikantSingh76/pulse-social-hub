@@ -45,6 +45,18 @@ public class Dtos {
         private String displayName;
     }
 
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ForgotPasswordRequest {
+        private String email;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ResetPasswordRequest {
+        private String email;
+        private String otp;
+        private String newPassword;
+    }
+
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class AuthResponse {
         private String token;

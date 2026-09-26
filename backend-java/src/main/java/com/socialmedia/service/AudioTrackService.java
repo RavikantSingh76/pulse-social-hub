@@ -10,15 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.socialmedia.util.FileUploadSecurityUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,15 +84,19 @@ public class AudioTrackService {
 
         User creator = userId != null ? userRepository.findById(userId).orElse(null) : null;
 
-        // Save audio file to uploads/audio
-        String audioFileName = saveFile(audioFile, "./uploads/audio");
-        String audioUrl = "/uploads/audio/" + audioFileName;
-
+        // Save audio file securely to uploads/audio
+        String audioFileName;
         String coverUrl = null;
-        if (coverFile != null && !coverFile.isEmpty()) {
-            String coverFileName = saveFile(coverFile, "./uploads/audio/covers");
-            coverUrl = "/uploads/audio/covers/" + coverFileName;
+        try {
+            audioFileName = FileUploadSecurityUtil.storeAudio(audioFile, "./uploads/audio");
+            if (coverFile != null && !coverFile.isEmpty()) {
+                String coverFileName = FileUploadSecurityUtil.storeImageFilename(coverFile, "./uploads/audio/covers");
+                coverUrl = "/uploads/audio/covers/" + coverFileName;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store audio files: " + e.getMessage(), e);
         }
+        String audioUrl = "/uploads/audio/" + audioFileName;
 
         AudioTrack.SourceType st = AudioTrack.SourceType.USER_UPLOADED;
         if (sourceType != null) {
@@ -174,32 +173,5 @@ public class AudioTrackService {
                 .createdByName(track.getCreatedBy() != null ? track.getCreatedBy().getDisplayName() : "Platform Audio")
                 .createdAt(track.getCreatedAt() != null ? track.getCreatedAt().toString() : null)
                 .build();
-    }
-
-    private String saveFile(MultipartFile file, String targetDir) {
-        try {
-            Path dirPath = Paths.get(targetDir).toAbsolutePath().normalize();
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
-            }
-            String originalFilename = file.getOriginalFilename();
-            String extension = ".mp3";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String randomFileName = UUID.randomUUID() + extension;
-            Path targetLocation = dirPath.resolve(randomFileName).normalize();
-
-            if (!targetLocation.startsWith(dirPath)) {
-                throw new SecurityException("Directory traversal attack detected in filename");
-            }
-
-            try (InputStream in = file.getInputStream()) {
-                Files.copy(in, targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            }
-            return randomFileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to store audio file: " + e.getMessage(), e);
-        }
     }
 }

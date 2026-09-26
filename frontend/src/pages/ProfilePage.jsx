@@ -10,7 +10,7 @@ import PostViewerModal from '../components/profile/PostViewerModal';
 import StoryHighlights from '../components/profile/StoryHighlights';
 import CreatorAnalyticsTab from '../components/profile/CreatorAnalyticsTab';
 import { soundFx } from '../utils/audioEffects';
-import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl } from '../utils/mediaUtils';
+import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl, API_BASE_ORIGIN } from '../utils/mediaUtils';
 import {
   Grid,
   Film,
@@ -454,7 +454,7 @@ export const ProfilePage = () => {
             const isCarousel = mediaList.length > 1;
 
             const mediaUrl = primaryMedia?.url
-              ? (primaryMedia.url.startsWith('http') ? primaryMedia.url : `http://localhost:8080${primaryMedia.url}`)
+              ? (primaryMedia.url.startsWith('http') ? primaryMedia.url : `${API_BASE_ORIGIN}${primaryMedia.url}`)
               : (post.videoUrl || post.imageUrl || '');
 
             return (

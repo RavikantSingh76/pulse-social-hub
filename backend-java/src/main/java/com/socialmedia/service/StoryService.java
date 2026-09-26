@@ -7,15 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.socialmedia.util.FileUploadSecurityUtil;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -262,17 +257,8 @@ public class StoryService {
 
     private String saveFile(MultipartFile file) {
         try {
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) dir.mkdirs();
-
-            String ext = file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")
-                    ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."))
-                    : ".jpg";
-            String filename = UUID.randomUUID() + ext;
-            Path path = Paths.get(UPLOAD_DIR + filename);
-            Files.write(path, file.getBytes());
-            return "/uploads/" + filename;
-        } catch (IOException e) {
+            return FileUploadSecurityUtil.storeMedia(file, UPLOAD_DIR);
+        } catch (Exception e) {
             throw new RuntimeException("Failed to store media file: " + e.getMessage());
         }
     }

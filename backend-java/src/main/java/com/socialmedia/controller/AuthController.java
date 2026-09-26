@@ -47,4 +47,40 @@ public class AuthController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> forgotPassword(
+            @RequestParam(value = "email", required = false) String emailParam,
+            @RequestBody(required = false) ForgotPasswordRequest req) {
+        try {
+            String email = req != null && req.getEmail() != null ? req.getEmail() : emailParam;
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Email parameter is required."));
+            }
+            String otp = authService.sendOtpToEmail(email);
+            return ResponseEntity.ok(ApiResponse.success("OTP sent successfully to your email!", java.util.Map.of(
+                    "email", email,
+                    "otp", otp,
+                    "expiresIn", "10 minutes"
+            )));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            if (request == null || request.getEmail() == null || request.getOtp() == null || request.getNewPassword() == null) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Email, OTP, and new password are required."));
+            }
+            boolean isReset = authService.verifyOtpAndResetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+            if (isReset) {
+                return ResponseEntity.ok(ApiResponse.success("Password reset successfully! You can now sign in with your new password.", "OK"));
+            }
+            return ResponseEntity.badRequest().body(ApiResponse.error("Invalid or expired OTP."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }

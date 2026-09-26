@@ -169,15 +169,33 @@ npm run dev
 
 ---
 
-## 🔑 Demo Credentials
+## 🔑 Local Development & Seed Accounts Configuration
 
-| Role | Email / Identifier | Password | Access / Features |
+When launched with the default profile, the database seeder can populate initial test accounts to explore the platform. 
+
+> [!IMPORTANT]
+> Developers must configure their own secure passwords in local environment files (`.env`). Do not use default or predictable passwords in any environment.
+>
+> ```bash
+> # Required seed passwords for local development / testing
+> SEED_ADMIN_PASSWORD=
+> SEED_USER_PASSWORD=
+>
+> # Frontend demo button configuration (optional)
+> VITE_DEMO_ADMIN_PASSWORD=
+> VITE_DEMO_USER_PASSWORD=
+> ```
+
+| Role | Email / Identifier | Password Configuration | Access / Features |
 | :--- | :--- | :--- | :--- |
-| **👑 Chief Administrator (Ravikant Singh)** | `ravikantsinghravi7@gmail.com` *(or `ravikant`)* | `Admin@123` | Full Admin Center (`/admin`), Verification Badges, User Moderation, Warnings, Content Control |
-| **👑 Administrator** | `admin@social.com` *(or `admin`)* | `Admin@123` | Admin Panel (`/admin`), Moderation, Verification Toggle |
-| **🇮🇳 Indian Creator (Aarav Sharma)** | `aarav.sharma1@pulse.in` | `User@123` | Verified Creator, Reels, Stories, Creator Studio (`/creator/studio`) |
-| **🇮🇳 Indian Creator (Ananya Verma)** | `ananya.verma2@pulse.in` | `User@123` | Creator Studio, Feeds, Direct Messages, Groups |
-| **🇮🇳 100+ Indian Users** | `[firstname].[lastname][1..100]@pulse.in` | `User@123` | Active Indian Community across Bengaluru, Delhi, Mumbai, Hyderabad, Pune, etc. |
+| **👑 Chief Administrator (Ravikant Singh)** | `ravikantsinghravi7@gmail.com` *(or `ravikant`)* | Configurable via `SEED_ADMIN_PASSWORD` | Full Admin Center (`/admin`), Verification Badges, User Moderation, Warnings, Content Control |
+| **👑 Administrator** | `admin@social.com` *(or `admin`)* | Configurable via `SEED_ADMIN_PASSWORD` | Admin Panel (`/admin`), Moderation, Verification Toggle |
+| **🇮🇳 Indian Creator (Aarav Sharma)** | `aarav.sharma1@pulse.in` | Configurable via `SEED_USER_PASSWORD` | Verified Creator, Reels, Stories, Creator Studio (`/creator/studio`) |
+| **🇮🇳 Indian Creator (Ananya Verma)** | `ananya.verma2@pulse.in` | Configurable via `SEED_USER_PASSWORD` | Creator Studio, Feeds, Direct Messages, Groups |
+| **🇮🇳 200+ Seed Users** | `[firstname].[lastname][1..200]@pulse.in` | Configurable via `SEED_USER_PASSWORD` | Active Community across Bengaluru, Delhi, Mumbai, Hyderabad, Pune, etc. |
+
+> [!CAUTION]
+> For any publicly accessible or production deployment, ensure you generate strong custom passwords, configure `JWT_SECRET`, and set `VITE_SHOW_DEMO_ACCOUNTS=false`.
 
 ---
 

@@ -22,6 +22,7 @@ import { useAuth } from '../context/AuthContext';
 import { soundFx } from '../utils/audioEffects';
 import PlaylistPlayerModal from '../components/playlist/PlaylistPlayerModal';
 import toast from 'react-hot-toast';
+import { API_BASE_ORIGIN } from '../utils/mediaUtils';
 
 export default function PlaylistsPage() {
   const { user } = useAuth();
@@ -207,7 +208,7 @@ export default function PlaylistsPage() {
   const resolveMediaUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    return `http://localhost:8080${url}`;
+    return `${API_BASE_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   return (

@@ -37,9 +37,9 @@ export const SocketProvider = ({ children }) => {
     }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = window.location.hostname === 'localhost'
+    const wsUrl = import.meta.env.VITE_WS_URL || (window.location.hostname === 'localhost'
       ? 'ws://localhost:8080/ws'
-      : `${protocol}//${window.location.host}/ws`;
+      : `${protocol}//${window.location.host}/ws`);
 
     let socket = null;
     let reconnectTimeout = null;

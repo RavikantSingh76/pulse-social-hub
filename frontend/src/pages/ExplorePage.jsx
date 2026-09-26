@@ -17,7 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl } from '../utils/mediaUtils';
+import { getYouTubeId, getYouTubeThumbnail, resolveSafeMediaUrl, API_BASE_ORIGIN } from '../utils/mediaUtils';
 
 const CATEGORIES = [
   { id: 'ALL', label: '🔥 All' },
@@ -230,7 +230,7 @@ export const ExplorePage = () => {
               const media = post.media && post.media.length > 0 ? post.media[0] : null;
               const isVideo = media?.type === 'VIDEO';
               const mediaUrl = media?.url
-                ? (media.url.startsWith('http') ? media.url : `http://localhost:8080${media.url}`)
+                ? (media.url.startsWith('http') ? media.url : `${API_BASE_ORIGIN}${media.url}`)
                 : null;
 
               return (

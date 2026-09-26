@@ -29,9 +29,16 @@ async function seedDatabase() {
   await query('DELETE FROM users');
 
   console.log('[SEED] Creating default users and hashing passwords...');
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const userPassword = process.env.SEED_USER_PASSWORD;
+
+  if (!adminPassword || !userPassword) {
+    throw new Error('SEED_ADMIN_PASSWORD and SEED_USER_PASSWORD environment variables are required.');
+  }
+
   const salt = await bcrypt.genSalt(10);
-  const adminPasswordHash = await bcrypt.hash('Admin@123', salt);
-  const userPasswordHash = await bcrypt.hash('User@123', salt);
+  const adminPasswordHash = await bcrypt.hash(adminPassword, salt);
+  const userPasswordHash = await bcrypt.hash(userPassword, salt);
 
   const usersData = [
     {
@@ -417,11 +424,11 @@ async function seedDatabase() {
   console.log('\n======================================================');
   console.log('✅ DATABASE SEEDING COMPLETED SUCCESSFULLY!');
   console.log('======================================================');
-  console.log('Demo Credentials:');
-  console.log('  Admin User:  admin@social.com   / Admin@123');
-  console.log('  Demo User:   alex@social.com    / User@123');
-  console.log('  Demo User:   sarah@social.com   / User@123');
-  console.log('  Demo User:   david@social.com   / User@123');
+  console.log('Demo Users Seeded:');
+  console.log('  Admin User:  admin@social.com   (Password configured via SEED_ADMIN_PASSWORD)');
+  console.log('  Demo User:   alex@social.com    (Password configured via SEED_USER_PASSWORD)');
+  console.log('  Demo User:   sarah@social.com   (Password configured via SEED_USER_PASSWORD)');
+  console.log('  Demo User:   david@social.com   (Password configured via SEED_USER_PASSWORD)');
   console.log('======================================================\n');
 }
 

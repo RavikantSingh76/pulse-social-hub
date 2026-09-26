@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -191,5 +193,81 @@ public class AuthService {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
+    }
+
+    // In-memory OTP storage with timestamp for expiry (10 minutes)
+    private static class OtpEntry {
+        final String otp;
+        final long createdAt;
+
+        OtpEntry(String otp) {
+            this.otp = otp;
+            this.createdAt = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return (System.currentTimeMillis() - createdAt) > (10 * 60 * 1000); // 10 minutes
+        }
+    }
+
+    private final Map<String, OtpEntry> otpStorage = new ConcurrentHashMap<>();
+
+    public String sendOtpToEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email address is required.");
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        if (!userRepository.existsByEmailIgnoreCase(cleanEmail)) {
+            throw new IllegalArgumentException("No account registered with this email address.");
+        }
+
+        // Generate 6-digit cryptographically secure OTP
+        String otp = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
+        otpStorage.put(cleanEmail, new OtpEntry(otp));
+
+        System.out.println("================================================================================");
+        System.out.println("🔑 [Password Reset OTP] Generated for: " + cleanEmail);
+        System.out.println("👉 OTP Code: " + otp + " (Valid for 10 minutes)");
+        System.out.println("================================================================================");
+
+        return otp;
+    }
+
+    @Transactional
+    public boolean verifyOtpAndResetPassword(String email, String otp, String newPassword) {
+        if (email == null || otp == null || newPassword == null) {
+            throw new IllegalArgumentException("Email, OTP, and new password are required.");
+        }
+        if (newPassword.trim().length() < 6) {
+            throw new IllegalArgumentException("New password must be at least 6 characters long.");
+        }
+
+        String cleanEmail = email.trim().toLowerCase();
+        OtpEntry entry = otpStorage.get(cleanEmail);
+
+        if (entry == null) {
+            throw new IllegalArgumentException("No OTP requested for this email, or it has expired.");
+        }
+
+        if (entry.isExpired()) {
+            otpStorage.remove(cleanEmail);
+            throw new IllegalArgumentException("OTP has expired. Please request a new code.");
+        }
+
+        if (!entry.otp.equals(otp.trim())) {
+            throw new IllegalArgumentException("Invalid OTP code. Please check and try again.");
+        }
+
+        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User account not found."));
+
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        userRepository.save(user);
+
+        // Invalidate OTP after successful reset
+        otpStorage.remove(cleanEmail);
+
+        System.out.println("✅ [Password Reset] Password reset successfully for: " + cleanEmail);
+        return true;
     }
 }

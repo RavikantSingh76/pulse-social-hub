@@ -9,11 +9,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -173,12 +171,6 @@ public class UserController {
     }
 
     private String saveFile(MultipartFile file) throws IOException {
-        File dir = new File("./uploads");
-        if (!dir.exists()) dir.mkdirs();
-        String originalName = file.getOriginalFilename();
-        String ext = originalName != null && originalName.contains(".") ? originalName.substring(originalName.lastIndexOf(".")) : ".jpg";
-        String newName = UUID.randomUUID() + ext;
-        file.transferTo(new File(dir, newName));
-        return newName;
+        return com.socialmedia.util.FileUploadSecurityUtil.storeImageFilename(file, "./uploads");
     }
 }

@@ -78,10 +78,11 @@ public class MessageController {
 
     @GetMapping("/conversations/{id}/search")
     public ResponseEntity<ApiResponse<List<MessageResponse>>> searchMessages(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id,
             @RequestParam("q") String query) {
 
-        List<MessageResponse> messages = messageService.searchMessages(id, query);
+        List<MessageResponse> messages = messageService.searchMessages(id, userPrincipal.getId(), query);
         return ResponseEntity.ok(ApiResponse.success(messages));
     }
 

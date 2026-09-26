@@ -3,6 +3,7 @@ import { messageService, userService } from '../services/services';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { Avatar } from '../components/common/Avatar';
+import { API_BASE_ORIGIN } from '../utils/mediaUtils';
 import GroupChatModal from '../components/chat/GroupChatModal';
 import CallModal from '../components/chat/CallModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -429,9 +430,9 @@ export const MessagesPage = () => {
                     {m.mediaUrl && (
                       <div className="rounded-2xl overflow-hidden mb-2">
                         {m.mediaUrl.endsWith('.mp4') ? (
-                          <video src={m.mediaUrl.startsWith('http') ? m.mediaUrl : `http://localhost:8080${m.mediaUrl}`} controls className="w-full rounded-2xl" />
+                          <video src={m.mediaUrl.startsWith('http') ? m.mediaUrl : `${API_BASE_ORIGIN}${m.mediaUrl}`} controls className="w-full rounded-2xl" />
                         ) : (
-                          <img src={m.mediaUrl.startsWith('http') ? m.mediaUrl : `http://localhost:8080${m.mediaUrl}`} alt="Attached" className="w-full rounded-2xl object-cover max-h-60" />
+                          <img src={m.mediaUrl.startsWith('http') ? m.mediaUrl : `${API_BASE_ORIGIN}${m.mediaUrl}`} alt="Attached" className="w-full rounded-2xl object-cover max-h-60" />
                         )}
                       </div>
                     )}
